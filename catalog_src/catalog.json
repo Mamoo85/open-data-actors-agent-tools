@@ -1,0 +1,3293 @@
+[
+ {
+  "slug": "fmcsa-new-carrier-leads",
+  "title": "FMCSA New Motor Carrier Leads: New Authority, Email & Phone",
+  "description": "New motor carrier leads from the official FMCSA census: new USDOT/MC trucking companies with officer names, authority status, filed email and phone. Filter by state and fleet size; deduped, so daily runs only bill new carriers. 141 automated checks.",
+  "seo": "FMCSA Motor Carrier Leads: New Trucking Authorities",
+  "example": {
+   "body": "{\"states\": [], \"daysBack\": 7, \"requireEmail\": true, \"maxResults\": 10, \"onlyNewSinceLastRun\": false}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "FMCSA New Motor Carrier Leads",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "mode": {
+     "title": "Mode",
+     "type": "string",
+     "description": "newCarriers (default) = the feed of carriers newly added to the FMCSA census in the last N days. lookup = look up specific carriers by USDOT number, MC/MX number or company name, any registration date; the date window, 'Only new since last run' and 'Only carriers with an email' are ignored.",
+     "editor": "select",
+     "default": "newCarriers",
+     "enum": [
+      "newCarriers",
+      "lookup"
+     ],
+     "enumTitles": [
+      "New carriers feed (default)",
+      "Lookup by USDOT / MC / name"
+     ],
+     "prefill": "newCarriers",
+     "sectionCaption": "Mode",
+     "sectionDescription": "Pick the daily new-carrier feed, or look up specific carriers. Most runs leave this on the default."
+    },
+    "states": {
+     "title": "States (2-letter)",
+     "type": "array",
+     "description": "Two-letter state codes to include, e.g. [\"TX\",\"FL\",\"GA\"]. Leave empty to get new carriers from every US state.",
+     "editor": "stringList",
+     "default": [],
+     "prefill": [],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "daysBack": {
+     "title": "New in the last N days",
+     "type": "integer",
+     "description": "Only carriers added to the FMCSA census in the last N days. 7 = this week's new authorities. Use 1-3 for a daily scheduled feed.",
+     "default": 7,
+     "minimum": 1,
+     "maximum": 120,
+     "editor": "number",
+     "prefill": 7
+    },
+    "maxResults": {
+     "title": "Max results",
+     "type": "integer",
+     "description": "Hard cap on carriers returned, and charged, in this run. Each carrier is $0.0035 through October 21, 2026, then $0.008 (1,000 = $8).",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 50000,
+     "prefill": 5,
+     "editor": "number"
+    },
+    "requireEmail": {
+     "title": "Only carriers with an email",
+     "type": "boolean",
+     "description": "Return only carriers with an email address on their FMCSA filing. In our June 2026 sample of the 200 newest carriers, all 200 had one.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (deduped)",
+     "type": "boolean",
+     "description": "Skip any carrier (by USDOT number) you already received in an earlier run, so you are never charged twice for the same carrier. Turn off to re-pull the same window.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "requirePhone": {
+     "title": "Only carriers with a phone",
+     "type": "boolean",
+     "description": "Return only carriers with a phone or cell number on file.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "carrierOperation": {
+     "title": "Carrier operation type",
+     "type": "string",
+     "description": "Interstate = hauls across state lines. Intrastate = operates inside one state only.",
+     "editor": "select",
+     "default": "any",
+     "enum": [
+      "any",
+      "interstate",
+      "intrastate"
+     ],
+     "enumTitles": [
+      "Any",
+      "Interstate only",
+      "Intrastate only"
+     ]
+    },
+    "minPowerUnits": {
+     "title": "Minimum power units (fleet size)",
+     "type": "integer",
+     "description": "Only carriers with at least this many trucks (power units). 0 = no minimum. Most new authorities run 1-5 trucks.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "maxPowerUnits": {
+     "title": "Maximum power units (fleet size)",
+     "type": "integer",
+     "description": "Only carriers with at most this many trucks. 0 = no maximum.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "minDrivers": {
+     "title": "Minimum drivers",
+     "type": "integer",
+     "description": "Only carriers reporting at least this many drivers. 0 = no minimum.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "maxDrivers": {
+     "title": "Maximum drivers",
+     "type": "integer",
+     "description": "Only carriers reporting at most this many drivers. 0 = no maximum.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "hazmatOnly": {
+     "title": "Hazmat carriers only",
+     "type": "boolean",
+     "description": "Return only carriers flagged as hazardous-materials carriers in the FMCSA census.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "forHireOnly": {
+     "title": "For-hire trucking companies only",
+     "type": "boolean",
+     "description": "USDOT numbers are also issued to businesses that only move their own goods (contractors, landscapers, home improvement firms). Turn this on to keep only carriers registered as authorized or exempt for-hire, i.e. companies that haul freight for others. About 3 in 4 new registrations pass (Sept 2026 data).",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "authorityStatus": {
+     "title": "Operating authority status",
+     "type": "string",
+     "description": "Keep only carriers whose operating authority (MC/MX docket) has this status in the FMCSA authority history. Brand-new carriers are usually Pending until their authority is granted. 'Any' (default) applies no filter.",
+     "editor": "select",
+     "default": "any",
+     "enum": [
+      "any",
+      "Active",
+      "Pending",
+      "Inactive",
+      "Withdrawn"
+     ],
+     "enumTitles": [
+      "Any",
+      "Active (granted)",
+      "Pending",
+      "Inactive (revoked / suspended)",
+      "Withdrawn"
+     ]
+    },
+    "includeAuthority": {
+     "title": "Include operating authority fields",
+     "type": "boolean",
+     "description": "Adds authority_type, authority_status, authority_granted_date and per-docket history from the FMCSA authority dataset (one extra free public API call per 100 carriers). Turn off to skip it.",
+     "editor": "checkbox",
+     "default": true
+    },
+    "cargoTypes": {
+     "title": "Cargo types (any of)",
+     "type": "array",
+     "description": "Only carriers that declare at least one of these cargo types on their filing. Keys: genfreight, household, metalsheet, motoveh, drivetow, logpole, bldgmat, mobilehome, machlrg, produce, liqgas, intermodal, passengers, oilfield, livestock, grainfeed, coalcoke, meat, garbage, usmail, chem, drybulk, coldfood, beverages, paperprod, utility, farmsupp, construct, waterwell, cargoothr.",
+     "editor": "stringList",
+     "default": []
+    },
+    "nameContains": {
+     "title": "Company name contains",
+     "type": "string",
+     "description": "Only carriers whose legal or DBA name contains this text (case-insensitive), e.g. LOGISTICS.",
+     "editor": "textfield",
+     "default": ""
+    },
+    "companyName": {
+     "title": "Company name (lookup mode)",
+     "type": "string",
+     "description": "Lookup mode: find carriers whose legal or DBA name contains this text (case-insensitive), e.g. WERNER. Same matching as 'Company name contains'; use either one.",
+     "editor": "textfield",
+     "default": ""
+    },
+    "dotNumbers": {
+     "title": "USDOT numbers (lookup mode)",
+     "type": "array",
+     "description": "Look up these exact carriers by USDOT number, any registration date. When set, the 'new in the last N days' window is ignored. Turn off 'Only new since last run' and 'Only carriers with an email' to get every listed carrier.",
+     "editor": "stringList",
+     "default": []
+    },
+    "mcNumbers": {
+     "title": "MC numbers (lookup mode)",
+     "type": "array",
+     "description": "Look up carriers by MC (operating authority) number, digits only. Same behavior as USDOT lookup; can be combined with it.",
+     "editor": "stringList",
+     "default": []
+    },
+    "socrataAppToken": {
+     "title": "Socrata app token (optional)",
+     "type": "string",
+     "description": "Free app token from data.transportation.gov. Only useful for very large or very frequent pulls, to avoid shared rate limits. Can also be set with the SOCRATA_APP_TOKEN environment variable.",
+     "editor": "textfield",
+     "isSecret": true
+    },
+    "webhookUrl": {
+     "title": "Webhook URL (optional)",
+     "type": "string",
+     "description": "Optional. Delivered carriers are POSTed here as JSON batches: { source, count, records: [...] }. Use it to push leads straight into a CRM, or an n8n, Make or Zapier webhook.",
+     "editor": "textfield",
+     "default": ""
+    },
+    "webhookBatchSize": {
+     "title": "Webhook batch size",
+     "type": "integer",
+     "description": "How many records per webhook POST.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 1000,
+     "editor": "number"
+    }
+   }
+  }
+ },
+ {
+  "slug": "warn-layoff-alerts",
+  "title": "WARN Layoff Notices API: 7 States (TX CA WA OR MD VA NC) $3/1k",
+  "description": "WARN Act layoff notices from 7 official state sources (TX, CA, WA, OR, MD, VA, NC), verified by 89 passing tests. Clean rows: employer, workers affected, city, notice and layoff dates. Deduped across runs for scheduled alerts. CSV, JSON, API or webhook. $0.003 per notice.",
+  "seo": "WARN Act Layoff Notices API: 7 US States | $3/1k",
+  "example": {
+   "body": "{\"states\": [\"TX\"], \"daysBack\": 365, \"maxResults\": 10, \"onlyNewSinceLastRun\": false}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "WARN Layoff Alerts",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "states": {
+     "title": "States (2-letter)",
+     "type": "array",
+     "description": "States to pull (2-letter codes). Supported: TX (Texas open data), OR (Oregon HECC tracker), CA (California EDD current-quarter report), WA (Washington ESD database), MD (Maryland DLLR), VA (Virginia VEC/VirginiaWorks), NC (North Carolina Commerce). Any other code is skipped with a note in the log. Oregon rows include notices that Oregon filed for multi-state employers; the row's state field is the actual layoff location when the tracker gives one, and source_state is OR.",
+     "editor": "stringList",
+     "default": [
+      "TX"
+     ],
+     "prefill": [
+      "CA"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "daysBack": {
+     "title": "Notices from the last N days",
+     "type": "integer",
+     "description": "Only notices with a notice date in the last N days (max 365). The Texas open-data feed is updated irregularly, so the default is a full year to make sure you always see the latest filings.",
+     "default": 365,
+     "minimum": 1,
+     "maximum": 365,
+     "prefill": 60,
+     "editor": "number"
+    },
+    "maxResults": {
+     "title": "Max results",
+     "type": "integer",
+     "description": "Hard cap on notices returned, and charged, in this run. Each notice is $0.003, so 50 notices = $0.15.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 20000,
+     "prefill": 5,
+     "editor": "number"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (deduped)",
+     "type": "boolean",
+     "description": "Skip notices you already received in an earlier run (matched by employer + notice date + city), so a schedule never charges twice for the same notice. Turn off to re-pull the same window.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "minLayoffCount": {
+     "title": "Minimum layoff count",
+     "type": "integer",
+     "description": "Only notices that affect at least this many workers. 0 = no minimum. Try 100 for large layoffs only.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "apolloApiKey": {
+     "title": "Apollo API key (optional)",
+     "type": "string",
+     "description": "Your Apollo.io API key. When set, each notice gets the employer's website domain and main phone from an Apollo company search (company-level only, no personal emails). Uses your Apollo credits, and adds a separate $0.05 charge only when a domain or phone is actually found. Can also be set with the APOLLO_API_KEY environment variable.",
+     "editor": "textfield",
+     "isSecret": true
+    },
+    "socrataAppToken": {
+     "title": "Socrata app token (optional)",
+     "type": "string",
+     "description": "Free app token from data.texas.gov. Only needed for very frequent pulls. Can also be set with the SOCRATA_APP_TOKEN environment variable.",
+     "editor": "textfield",
+     "isSecret": true
+    },
+    "webhookUrl": {
+     "title": "Webhook URL (optional)",
+     "type": "string",
+     "description": "Optional. Delivered notices are POSTed here as JSON batches: { source, count, records: [...] }. Works with any n8n, Make or Zapier webhook.",
+     "editor": "textfield",
+     "default": ""
+    },
+    "webhookBatchSize": {
+     "title": "Webhook batch size",
+     "type": "integer",
+     "description": "Records per webhook POST.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 1000,
+     "editor": "number"
+    }
+   }
+  }
+ },
+ {
+  "slug": "website-tech-stack-detector",
+  "title": "Website Tech Stack Lookup: CMS, Frameworks, Hosting $0.002/site",
+  "description": "2,392 technology fingerprints with version and confidence, tested on 19,393 checks. Find the CMS, ecommerce platform, frameworks, analytics, CDN and hosting any website uses. Bulk domains in, one row per site with evidence. $0.002 per site, no subscription; failed sites are free.",
+  "seo": "Tech Stack Detector API: CMS, Analytics, Hosting Lookup",
+  "example": {
+   "body": "{\"urls\": [\"shopify.com\", \"wordpress.org\", \"vercel.com\"]}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Website Tech Stack Detector",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "urls": {
+     "title": "URLs or domains",
+     "type": "array",
+     "description": "Websites to check, one per line. Bare domains (example.com) or full URLs both work; duplicates are removed. Only the homepage is fetched.",
+     "editor": "stringList",
+     "prefill": [
+      "shopify.com"
+     ],
+     "default": [
+      "shopify.com",
+      "wordpress.org",
+      "vercel.com"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "includeEvidence": {
+     "title": "Include evidence",
+     "type": "boolean",
+     "description": "Add the header, script URL, cookie name or HTML snippet behind each detection, so you can check any result yourself.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "maxSites": {
+     "title": "Max sites",
+     "type": "integer",
+     "description": "Upper bound on sites processed in this run. At $0.002 per analyzed site, 1,000 sites = $2. Failed and blocked sites are not charged.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 10000,
+     "editor": "number",
+     "prefill": 1,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "respectRobots": {
+     "title": "Respect robots.txt",
+     "type": "boolean",
+     "description": "Skip sites whose robots.txt disallows the homepage for our user agent (WebsiteTechStackDetector). Skipped sites are not charged.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "categoriesFilter": {
+     "title": "Only these categories",
+     "type": "array",
+     "description": "Return only technologies in these categories, for example CMS, Ecommerce, Analytics, CDN, Payment, Web servers. Case-insensitive. Leave empty to return every category (default). Sites are still charged per analyzed site, not per technology.",
+     "editor": "stringList",
+     "default": []
+    },
+    "concurrency": {
+     "title": "Concurrency",
+     "type": "integer",
+     "description": "How many sites to fetch in parallel (each request goes to a different site). 5 is a good default; up to 20 for large lists.",
+     "default": 5,
+     "minimum": 1,
+     "maximum": 20,
+     "editor": "number"
+    }
+   },
+   "required": [
+    "urls"
+   ],
+   "description": "Detect the technologies a website uses (CMS, ecommerce, frameworks, analytics, CDN, hosting, 2,000+ technologies). Input: urls[] (domains or URLs, homepage only), maxSites; optional categoriesFilter[], includeEvidence. Output: one row per site with detected technologies, categories, confidence and evidence. Example input: {\"urls\":[\"shopify.com\",\"vercel.com\"],\"maxSites\":100}. Charged per analyzed site; failed sites are free."
+  }
+ },
+ {
+  "slug": "ats-open-roles",
+  "title": "Career Site Jobs API: Greenhouse, Lever, Ashby & more | $2/1k",
+  "description": "Career-site jobs at $0.002 each, with seniority, department and ready-made company presets. Open roles from the public job-board APIs of Greenhouse, Lever, Ashby, Workable, SmartRecruiters and Recruitee plus schema.org pages. One clean schema with salary, remote flag, apply URL.",
+  "seo": "Career Site Jobs Scraper: Greenhouse, Lever, Ashby | $2/1k",
+  "example": {
+   "body": "{\"companies\": [\"airbnb\", \"https://jobs.lever.co/spotify\", \"https://jobs.ashbyhq.com/ramp\"], \"maxJobsPerCompany\": 5, \"onlyNewSinceLastRun\": false}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Career Site Jobs API",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "companies": {
+     "title": "Companies (career-page URLs, names or slugs)",
+     "type": "array",
+     "description": "One company per line. Paste a careers URL (boards.greenhouse.io/stripe, jobs.lever.co/spotify, jobs.ashbyhq.com/ramp, apply.workable.com/blueground, jobs.smartrecruiters.com/ServiceNow, bunq.recruitee.com, applied.bamboohr.com, acme.breezy.hr, shopify.pinpointhq.com, acme.jobs.personio.de, www.arbeitnow.com, remotive.com or remoteok.com for those remote-job feeds (attribution field included), or any career page with schema.org JobPosting markup) or just a company name or slug like \"airbnb\". A name is checked against all ten ATS APIs; a URL is more precise. Example: [\"airbnb\",\"https://jobs.lever.co/spotify\",\"https://jobs.ashbyhq.com/ramp\"].",
+     "editor": "stringList",
+     "prefill": [
+      "airbnb"
+     ],
+     "default": [
+      "airbnb",
+      "https://jobs.lever.co/spotify",
+      "https://jobs.ashbyhq.com/ramp"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "companyPreset": {
+     "title": "Company preset",
+     "type": "string",
+     "description": "Add a ready-made list of verified public job boards: yc-top, ai-labs, fintech or devtools (several allowed, separated by commas). Each board returned live jobs when the list was last checked. If you leave Companies at its default, only the preset is fetched; anything else you type in Companies is added to the preset.",
+     "editor": "select",
+     "enum": [
+      "",
+      "yc-top",
+      "ai-labs",
+      "fintech",
+      "devtools"
+     ],
+     "enumTitles": [
+      "None",
+      "YC alumni (yc-top)",
+      "AI labs and infra (ai-labs)",
+      "Fintech (fintech)",
+      "Developer tools (devtools)"
+     ],
+     "default": ""
+    },
+    "keywords": {
+     "title": "Keyword filter (any match)",
+     "type": "array",
+     "description": "Keep only jobs whose title, department or location contains at least one of these words (not case-sensitive), e.g. \"engineer\", \"sales\", \"remote\". Leave empty for every open job.",
+     "editor": "stringList"
+    },
+    "locations": {
+     "title": "Locations (any match)",
+     "type": "array",
+     "description": "Keep only jobs whose location contains one of these strings (not case-sensitive), e.g. \"Detroit\", \"Michigan\", \"United States\".",
+     "editor": "stringList"
+    },
+    "remoteOnly": {
+     "title": "Remote jobs only",
+     "type": "boolean",
+     "description": "Keep only jobs flagged remote by the employer or with \"remote\" in the location.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "maxJobsPerCompany": {
+     "title": "Max jobs per company",
+     "type": "integer",
+     "description": "Newest matching jobs taken per company per run. 10 is enough for a quick look; raise it (up to 5,000) to get every open role.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 5000,
+     "prefill": 5,
+     "editor": "number"
+    },
+    "excludeKeywords": {
+     "title": "Exclude keywords",
+     "type": "array",
+     "description": "Drop jobs whose title, department or location contains any of these words, e.g. \"intern\".",
+     "editor": "stringList",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "departments": {
+     "title": "Departments (substring, any match)",
+     "type": "array",
+     "description": "Keep only jobs whose department contains one of these words (not case-sensitive), e.g. \"engineering\", \"sales\". Jobs with no department are dropped when this is set.",
+     "editor": "stringList"
+    },
+    "employmentTypes": {
+     "title": "Employment types",
+     "type": "array",
+     "description": "Keep only jobs of these types: full-time, part-time, contract, intern, temporary. Only ATS vendors that publish an employment type can match (Lever, Ashby, BambooHR, Breezy, Personio, Recruitee, SmartRecruiters and schema.org pages do; Greenhouse usually does not). Jobs with no published type are dropped when this is set. Example: [\"full-time\",\"contract\"].",
+     "editor": "stringList"
+    },
+    "postedWithinDays": {
+     "title": "Posted within last N days",
+     "type": "integer",
+     "description": "Drop jobs posted longer ago than this. Jobs with no posted date are kept. 0 = no limit.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (deduped)",
+     "type": "boolean",
+     "description": "Deliver only jobs you have not received before (tracked per company between runs). Repeat runs then return only newly posted roles, and already-seen jobs are never charged. Turn off to get the full current list every time.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "maxJobsTotal": {
+     "title": "Max jobs per run",
+     "type": "integer",
+     "description": "Hard cap on job rows, and charges, across all companies in this run. At $0.002 per job, 5,000 jobs = $10.",
+     "default": 200,
+     "minimum": 1,
+     "maximum": 100000,
+     "editor": "number",
+     "prefill": 5
+    },
+    "includeDescription": {
+     "title": "Include description text",
+     "type": "boolean",
+     "description": "Include the job description as plain text. Turn off for faster runs on SmartRecruiters and Workable (one less request per job). Same price either way.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "stateStoreName": {
+     "title": "Dedupe store name",
+     "type": "string",
+     "description": "Name of the key-value store that remembers which jobs you already received. Use a different name per feed or customer, or change it to start fresh. Example: \"acme-weekly-feed\".",
+     "default": "ats-open-roles-seen",
+     "editor": "textfield"
+    },
+    "monitorMode": {
+     "title": "Monitor mode (only new or changed)",
+     "type": "boolean",
+     "description": "Recurring-run mode: return only jobs that are new or whose title, location, department, employment type or URL changed since the last monitor run (use a high enough Max jobs per company so the whole board is covered). The first run is a baseline and returns every matching job. Unchanged jobs are not returned and not charged. Each row gets a changeType of new or changed.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "reportRemoved": {
+     "title": "Also report removed (monitor mode)",
+     "type": "boolean",
+     "description": "With monitor mode on, also emit one row with changeType \"removed\" for jobs that were on a company's career board in an earlier run and are gone now, only for companies whose full job board was read this run. Removed rows are free: they are not charged and never count toward your charge limit or max results. Nothing is reported as removed on the baseline run, when the fetch was incomplete or hit a cap, or when your input filters changed since the baseline (the next run re-learns the baseline instead). Default off.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "monitorName": {
+     "title": "Monitor name",
+     "type": "string",
+     "description": "Name of the saved baseline. Use a different name per watch list so schedules do not overwrite each other. Default is 'default'. Example: \"eng-hiring\".",
+     "default": "default",
+     "editor": "textfield"
+    }
+   },
+   "required": [
+    "companies"
+   ],
+   "description": "Fetch open jobs straight from company career pages and ATS APIs (Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, BambooHR, Breezy, Personio, schema.org pages, remote-job feeds). Input: companies[] (career-page URLs, names or slugs) or companyPreset; optional keywords[], locations[], remoteOnly, postedWithinDays, maxJobsPerCompany, maxJobsTotal. Output: one row per job with title, company, location, department, employment type, posted date, apply URL. Example input: {\"companies\":[\"airbnb\",\"https://jobs.lever.co/spotify\"],\"maxJobsPerCompany\":25}."
+  }
+ },
+ {
+  "slug": "city-council-agendas",
+  "title": "City Council Meetings & Agendas: Legistar Votes, PDFs | $1/1k",
+  "description": "City council meetings and agenda items from 18 US cities via the official Legistar Web API. Meeting date and time, body, matter, status, action, vote result, agenda PDF and attachment links. Keyword filters, deduped alerts, 93 passing tests. $0.001 per item.",
+  "seo": "City Council Meetings & Agendas: Legistar Votes | $1/1k",
+  "example": {
+   "body": "{\"clients\": [\"denver\", \"seattle\"], \"maxResults\": 50, \"onlyNewSinceLastRun\": false}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "City Council Agenda Items (Legistar)",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "clients": {
+     "title": "Cities (Legistar client slugs)",
+     "type": "array",
+     "description": "Legistar city slugs (the part before .legistar.com), e.g. seattle, denver, boston, phoenix, nashville. Leave empty for all 18 built-in cities. Any other Legistar slug can be tried; cities that need a private token are reported as unsupported and never charged.",
+     "editor": "stringList",
+     "default": [
+      "seattle",
+      "denver",
+      "boston"
+     ],
+     "prefill": [
+      "seattle"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "keywords": {
+     "title": "Keywords",
+     "type": "array",
+     "description": "Keep only items whose title or matter name contains ANY of these (not case-sensitive), e.g. zoning, rezone, liquor license, contract, bond. Leave empty for every item.",
+     "editor": "stringList"
+    },
+    "daysBack": {
+     "title": "Days back (default 7)",
+     "type": "integer",
+     "description": "Used when 'Meetings from' is empty.",
+     "default": 7,
+     "minimum": 0,
+     "maximum": 3650,
+     "editor": "number"
+    },
+    "daysAhead": {
+     "title": "Days ahead (default 30)",
+     "type": "integer",
+     "description": "Used when 'Meetings to' is empty.",
+     "default": 30,
+     "minimum": 0,
+     "maximum": 730,
+     "editor": "number"
+    },
+    "maxResults": {
+     "title": "Max results",
+     "type": "integer",
+     "description": "Hard cap on agenda items returned, and charged, in this run. At $0.001 per item, 1,000 items = $1.",
+     "default": 200,
+     "minimum": 1,
+     "maximum": 100000,
+     "prefill": 5,
+     "editor": "number"
+    },
+    "bodyFilter": {
+     "title": "Body filter",
+     "type": "string",
+     "description": "Part of the committee or body name, e.g. \"planning\", \"city council\", \"budget\". Not case-sensitive. Empty = all bodies.",
+     "editor": "textfield",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (deduped)",
+     "type": "boolean",
+     "description": "Skip items you already received in an earlier run (and never charge for them again). Turn off to re-pull the same date range.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "dateFrom": {
+     "title": "Meetings from (YYYY-MM-DD)",
+     "type": "string",
+     "description": "Start of the meeting date range, YYYY-MM-DD. Leave empty to use \"Days back\".",
+     "editor": "textfield"
+    },
+    "dateTo": {
+     "title": "Meetings to (YYYY-MM-DD)",
+     "type": "string",
+     "description": "End of the meeting date range, YYYY-MM-DD. Leave empty to use \"Days ahead\".",
+     "editor": "textfield"
+    },
+    "includeAttachments": {
+     "title": "Include attachment URLs",
+     "type": "boolean",
+     "description": "Add attachment links (staff reports, ordinance text) per item.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "includeMatterDetails": {
+     "title": "Include matter details (slower)",
+     "type": "boolean",
+     "description": "One extra request per item with a matter, adds matterTitle, matterIntroDate, matterPassedDate, matterBodyName.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "includeCancelled": {
+     "title": "Include cancelled meetings",
+     "description": "Include meetings whose agenda status is Cancelled.",
+     "type": "boolean",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "maxEventsPerClient": {
+     "title": "Max meetings per city",
+     "description": "Safety cap on meetings fetched per city per run.",
+     "type": "integer",
+     "default": 150,
+     "minimum": 1,
+     "maximum": 1000,
+     "editor": "number",
+     "prefill": 10
+    }
+   }
+  }
+ },
+ {
+  "slug": "company-enrichment-by-domain",
+  "title": "Company Enrichment by Domain: Socials, Emails, Tech Stack $5/1k",
+  "description": "Company enrichment from each company's own site and DNS only, verified by 73 passing tests. Domains in; name, logo, description, socials, careers/ATS, business emails and phones, email provider (MX) and tech stack out. No login, no data brokers. $0.005 per domain.",
+  "seo": "Company Enrichment API by Domain: Socials, Emails | $5/1k",
+  "example": {
+   "body": "{\n  \"domains\": [\n    \"basecamp.com\",\n    \"plausible.io\",\n    \"posthog.com\"\n  ],\n  \"maxPagesPerDomain\": 3,\n  \"includeTechStack\": true\n}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Company Enrichment by Domain",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "domains": {
+     "title": "Company domains",
+     "type": "array",
+     "description": "Company domains (example.com) or URLs. One output row per domain.",
+     "editor": "stringList",
+     "prefill": [
+      "basecamp.com"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "includeTechStack": {
+     "title": "Include tech stack",
+     "type": "boolean",
+     "description": "Summarize CMS, analytics, CDN, ecommerce and framework detected on the homepage.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "maxPagesPerDomain": {
+     "title": "Max pages per domain",
+     "type": "integer",
+     "description": "Homepage plus up to N-1 of /contact, /about, /careers found in the homepage links.",
+     "default": 3,
+     "minimum": 1,
+     "maximum": 5,
+     "editor": "number",
+     "prefill": 2,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "timeoutSecs": {
+     "title": "Timeout per domain (seconds)",
+     "type": "integer",
+     "description": "Total time budget for one domain.",
+     "default": 30,
+     "minimum": 5,
+     "maximum": 120,
+     "editor": "number"
+    },
+    "concurrency": {
+     "title": "Concurrency",
+     "type": "integer",
+     "description": "Domains processed in parallel.",
+     "default": 10,
+     "minimum": 1,
+     "maximum": 20,
+     "editor": "number"
+    }
+   },
+   "required": [
+    "domains"
+   ]
+  }
+ },
+ {
+  "slug": "sec-form-d-funding-leads",
+  "title": "SEC Form D Startup Funding Leads: Recently Funded, $2.50/1k",
+  "description": "Startup funding leads from official SEC EDGAR Form D filings at $0.0025 per filing. Issuer, industry, offering size, amount sold, investors, first-sale date, officers. Filter by industry, state, size; exclude pooled funds; dedupe. 102 passing tests. No login.",
+  "seo": "Startup Funding Leads from SEC Form D | $2.50/1k",
+  "example": {
+   "body": "{\n  \"lookbackDays\": 3,\n  \"excludePooledFunds\": true,\n  \"maxResults\": 50,\n  \"onlyNewSinceLastRun\": false\n}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "SEC Form D Funding Leads",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "lookbackDays": {
+     "title": "Lookback (business days)",
+     "type": "integer",
+     "description": "How many business days of EDGAR filings to scan, counting only days that have a published EDGAR index. Today's index (not out until the evening) and holidays are skipped and do not use up the lookback.",
+     "default": 3,
+     "minimum": 1,
+     "maximum": 30,
+     "editor": "number",
+     "prefill": 1,
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "maxResults": {
+     "title": "Max results",
+     "type": "integer",
+     "description": "Cap on filings delivered (and charged) this run. The default keeps a zero-config run under a minute.",
+     "default": 50,
+     "minimum": 1,
+     "maximum": 10000,
+     "editor": "number",
+     "prefill": 5
+    },
+    "industryGroups": {
+     "title": "Industry groups",
+     "type": "array",
+     "description": "Keep only these EDGAR industry groups. Empty = all.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "Agriculture",
+       "Commercial Banking",
+       "Insurance",
+       "Investing",
+       "Investment Banking",
+       "Pooled Investment Fund",
+       "Other Banking and Financial Services",
+       "Business Services",
+       "Coal Mining",
+       "Electric Utilities",
+       "Energy Conservation",
+       "Environmental Services",
+       "Oil and Gas",
+       "Other Energy",
+       "Biotechnology",
+       "Health Insurance",
+       "Hospitals and Physicians",
+       "Pharmaceuticals",
+       "Other Health Care",
+       "Manufacturing",
+       "Commercial",
+       "Construction",
+       "REITS and Finance",
+       "Residential",
+       "Other Real Estate",
+       "Retailing",
+       "Restaurants",
+       "Computers",
+       "Telecommunications",
+       "Other Technology",
+       "Airlines and Airports",
+       "Lodging and Conventions",
+       "Tourism and Travel Services",
+       "Other Travel",
+       "Other"
+      ]
+     }
+    },
+    "states": {
+     "title": "Issuer states",
+     "type": "array",
+     "description": "Two-letter state or country codes of the issuer's business address (for example CA, NY, TX). Empty = all.",
+     "editor": "stringList"
+    },
+    "includeAmendments": {
+     "title": "Include amendments (Form D/A)",
+     "type": "boolean",
+     "description": "Also return Form D/A amended filings. Off by default so you only see new raises.",
+     "default": false,
+     "editor": "checkbox",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "excludePooledFunds": {
+     "title": "Exclude pooled investment funds",
+     "type": "boolean",
+     "description": "Drop filings whose industry group is Pooled Investment Fund (VC, PE and hedge funds raising capital), leaving operating companies.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "excludeLimitedPartnerships": {
+     "title": "Exclude limited partnerships and funds by name",
+     "type": "boolean",
+     "description": "Also drop issuers whose name ends in LP, L.P., LLLP or Fund. Catches investment vehicles that file without marking themselves as a pooled fund. Off by default.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "minAmountSold": {
+     "title": "Minimum amount sold (USD)",
+     "type": "integer",
+     "description": "Keep filings whose total amount sold so far is at least this. 0 = no minimum.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "minOfferingAmount": {
+     "title": "Minimum offering amount (USD)",
+     "type": "integer",
+     "description": "Keep filings whose total offering amount is at least this. 0 = no minimum. Indefinite offerings are kept only when this is 0.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (deduped)",
+     "type": "boolean",
+     "description": "Skip filings already delivered in a previous run (tracked by accession number in a named key-value store). A repeat run on the same input delivers 0 rows and charges 0 filing events.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "secUserAgent": {
+     "title": "SEC User-Agent",
+     "type": "string",
+     "description": "Optional. Sent to sec.gov on every request. SEC requires a User-Agent with a contact email (for example \"Acme Research you@acme.com\"); without an email EDGAR answers HTTP 403. Leave empty to use the actor's own compliant User-Agent.",
+     "editor": "textfield"
+    },
+    "stateStoreName": {
+     "title": "Dedupe store name",
+     "type": "string",
+     "description": "Name of the named key-value store holding already-delivered accession numbers. Change it to keep separate feeds or to reset dedupe.",
+     "default": "sec-form-d-funding-leads-seen",
+     "editor": "textfield"
+    }
+   }
+  }
+ },
+ {
+  "slug": "technical-seo-page-audit",
+  "title": "Technical SEO Page Audit: Broken Links, Hreflang, $3/1k",
+  "description": "Technical SEO audit verified by 130 passing tests: title, meta, canonical, H1-H3, internal/external and broken links, missing alt, Open Graph, hreflang, JSON-LD, redirect chain, TTFB, and a prioritised issues list with a score. Respects robots.txt. $0.003 per page.",
+  "seo": "Technical SEO Audit API: Broken Links, Canonical | $3/1k",
+  "example": {
+   "body": "{\"urls\": [\"https://apify.com\", \"https://crawlee.dev\", \"https://example.com\"], \"maxPages\": 25, \"checkBrokenLinks\": true, \"maxLinksToCheck\": 15}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Technical SEO Page Audit",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "urls": {
+     "title": "Page URLs",
+     "type": "array",
+     "description": "Public pages to audit, one URL per row (a missing https:// is added). Each URL is audited as one page; the actor does not crawl beyond the links it checks. Pages blocked by robots.txt are returned unfetched and not charged.",
+     "editor": "stringList",
+     "prefill": [
+      "https://example.com"
+     ],
+     "default": [
+      "https://apify.com",
+      "https://crawlee.dev",
+      "https://example.com"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "maxPages": {
+     "title": "Max pages",
+     "type": "integer",
+     "description": "Cap on pages audited (and charged) this run.",
+     "default": 25,
+     "minimum": 1,
+     "maximum": 5000,
+     "editor": "number",
+     "prefill": 1
+    },
+    "checkBrokenLinks": {
+     "title": "Check for broken links",
+     "type": "boolean",
+     "description": "Request the links found on each page (HEAD, falling back to GET) and report those returning 404/410/5xx or that cannot be reached. Respects robots.txt and per-host rate limits. 401/403/429 responses are treated as blocked, not broken.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "maxLinksToCheck": {
+     "title": "Max links checked per page",
+     "type": "integer",
+     "description": "Internal links are checked first, then external. Set 0 to skip link checks. Results are cached across pages in the run.",
+     "default": 25,
+     "minimum": 0,
+     "maximum": 200,
+     "editor": "number",
+     "prefill": 5,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "requestDelayMs": {
+     "title": "Delay between requests to one host (ms)",
+     "type": "integer",
+     "description": "Minimum gap between requests to the same host. A larger robots.txt Crawl-delay (up to 10 s) overrides this.",
+     "default": 500,
+     "minimum": 250,
+     "maximum": 10000,
+     "editor": "number"
+    },
+    "userAgent": {
+     "title": "User-Agent",
+     "type": "string",
+     "description": "Sent on every request and matched against robots.txt (the default token is TechnicalSeoAuditBot). Leave the default unless a site needs you to identify yourself differently.",
+     "default": "TechnicalSeoAuditBot/1.0 (+https://apify.com/transparent_meteorite)",
+     "editor": "textfield"
+    }
+   }
+  }
+ },
+ {
+  "slug": "domain-intelligence-lookup",
+  "title": "Domain Intelligence: WHOIS/RDAP, DNS, Subdomains, SSL, $2/1k",
+  "description": "Bulk domain lookup verified by 94 passing tests: RDAP registration (registrar, created, expires, age), DNS over HTTPS (A, AAAA, MX, NS, TXT with SPF and DMARC parsed), subdomains from certificate transparency, SSL expiry and HTTP security headers. $0.002 per domain.",
+  "seo": "Domain Lookup API: WHOIS/RDAP, DNS, SPF, DMARC | $2/1k",
+  "example": {
+   "body": "{\"domains\": [\"example.com\", \"apify.com\", \"github.com\"], \"maxDomains\": 3, \"includeSubdomains\": true, \"maxSubdomains\": 50, \"checkSsl\": true, \"checkHeaders\": true}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Domain Intelligence Lookup",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "domains": {
+     "title": "Domains",
+     "type": "array",
+     "description": "Domain names to look up, one per row, for example example.com. A URL such as https://www.example.com/page is reduced to its host. Malformed entries are skipped, listed in the run summary and never charged.",
+     "editor": "stringList",
+     "prefill": [
+      "example.com"
+     ],
+     "default": [
+      "example.com",
+      "apify.com",
+      "github.com"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "maxDomains": {
+     "title": "Max domains",
+     "type": "integer",
+     "description": "Cap on domains looked up (and charged) this run.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 5000,
+     "editor": "number",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "includeSubdomains": {
+     "title": "Find subdomains (certificate transparency)",
+     "type": "boolean",
+     "description": "Query crt.sh for names seen in public certificates. crt.sh can be slow; on timeout the row still returns with a subdomainsError field.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "maxSubdomains": {
+     "title": "Max subdomains per domain",
+     "type": "integer",
+     "description": "Cap on subdomain names returned per domain (subdomainCount still shows the full count).",
+     "default": 200,
+     "minimum": 1,
+     "maximum": 5000,
+     "editor": "number",
+     "prefill": 20
+    },
+    "checkSsl": {
+     "title": "Check SSL certificate",
+     "type": "boolean",
+     "description": "Open a TLS connection to port 443 and read the certificate issuer, validity dates and days left.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "checkHeaders": {
+     "title": "Check HTTP security headers",
+     "type": "boolean",
+     "description": "Request the site homepage over HTTPS and report HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy and Permissions-Policy.",
+     "default": true,
+     "editor": "checkbox"
+    }
+   },
+   "required": [
+    "domains"
+   ]
+  }
+ },
+ {
+  "slug": "new-business-filings",
+  "title": "New Business Filings: New LLCs and Corporations, $4/1k",
+  "description": "New LLCs and corporations from official state open data (CO, NY, OR, CT), verified by 57 passing tests. Name, filing date, type, status, registered agent, public address, source link. Filter by state, type, keyword; deduped across runs. No login. $0.004 per filing.",
+  "seo": "New LLC & Business Filings API: CO, NY, OR, CT | $4/1k",
+  "example": {
+   "body": "{\"states\": [\"CO\", \"NY\", \"OR\", \"CT\"], \"daysBack\": 7, \"maxItems\": 20}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "New Business Filings",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "states": {
+     "title": "States",
+     "type": "array",
+     "description": "Which state portals to query. Supported: CO (Colorado), NY (New York), OR (Oregon), CT (Connecticut). Empty = all four.",
+     "editor": "select",
+     "default": [
+      "CO",
+      "NY",
+      "OR",
+      "CT"
+     ],
+     "items": {
+      "type": "string",
+      "enum": [
+       "CO",
+       "NY",
+       "OR",
+       "CT"
+      ],
+      "enumTitles": [
+       "Colorado",
+       "New York",
+       "Oregon",
+       "Connecticut"
+      ]
+     },
+     "prefill": [
+      "CO"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "daysBack": {
+     "title": "Days back",
+     "type": "integer",
+     "description": "Return entities formed or registered in the last N days (1 to 90).",
+     "default": 7,
+     "minimum": 1,
+     "maximum": 90,
+     "editor": "number"
+    },
+    "entityTypes": {
+     "title": "Entity type filter",
+     "type": "array",
+     "description": "Keep only these entity types. Empty = all. Nonprofits are included only if you select NONPROFIT or leave this empty.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "LLC",
+       "CORPORATION",
+       "NONPROFIT",
+       "PARTNERSHIP",
+       "OTHER"
+      ]
+     }
+    },
+    "keywords": {
+     "title": "Name keywords",
+     "type": "array",
+     "description": "Keep only entities whose name contains any of these words (case-insensitive), e.g. roofing, plumbing, holdings, cannabis.",
+     "editor": "stringList"
+    },
+    "maxItems": {
+     "title": "Max items",
+     "type": "integer",
+     "description": "Cap on filings delivered (and charged) this run, split evenly across the selected states.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 20000,
+     "editor": "number",
+     "prefill": 5
+    },
+    "activeOnly": {
+     "title": "Active filings only",
+     "type": "boolean",
+     "description": "Drop rejected, dissolved, withdrawn or delinquent records. States that publish no status (NY, OR) are always kept.",
+     "default": true,
+     "editor": "checkbox",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (deduped)",
+     "type": "boolean",
+     "description": "Skip filings already delivered in a previous run (tracked by state and entity ID in a named key-value store). A repeat run on the same input delivers 0 rows and charges 0 filing events.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "stateStoreName": {
+     "title": "Dedupe store name",
+     "type": "string",
+     "description": "Name of the named key-value store that remembers delivered filings. Change it to keep separate feeds or to reset dedupe.",
+     "default": "new-business-filings-seen",
+     "editor": "textfield"
+    }
+   }
+  }
+ },
+ {
+  "slug": "app-store-reviews",
+  "title": "App Store Reviews Scraper: Ratings, 150+ Countries, $0.50/1k",
+  "description": "Apple App Store reviews at $0.50 per 1,000, verified by 85 passing tests. Review text, stars, app version, date, votes, plus rating, rating count, price, genre and release notes. 150+ countries, keyword search, date and star filters, delta mode.",
+  "seo": "App Store Reviews Scraper API: iOS Ratings | $0.50 per 1k",
+  "example": {
+   "body": "{\"appIds\": [\"https://apps.apple.com/us/app/spotify-music-and-podcasts/id324684580\", \"570060128\"], \"countries\": [\"us\"], \"maxReviewsPerApp\": 50, \"includeAppDetails\": true}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "App Store Reviews",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "appIds": {
+     "title": "App IDs or App Store URLs",
+     "type": "array",
+     "description": "Apple app IDs (324684580 or id324684580) or App Store links such as https://apps.apple.com/us/app/spotify-music-and-podcasts/id324684580. Malformed entries are skipped, listed in the run summary and never charged.",
+     "editor": "stringList",
+     "prefill": [
+      "https://apps.apple.com/us/app/spotify-music-and-podcasts/id324684580"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "searchTerms": {
+     "title": "Search terms (optional)",
+     "type": "array",
+     "description": "Find apps by keyword with Apple's search API (for example 'meditation' or 'budget tracker'), searched in the first country. The top results per term are added to the app list.",
+     "editor": "stringList"
+    },
+    "countries": {
+     "title": "Countries (App Store storefronts)",
+     "type": "array",
+     "description": "Two-letter country codes such as us, gb, de, fr, jp, br, in. Each country has its own reviews, so every app is fetched once per country. 'uk' is accepted as gb.",
+     "editor": "stringList",
+     "prefill": [
+      "us"
+     ],
+     "default": [
+      "us"
+     ]
+    },
+    "maxReviewsPerApp": {
+     "title": "Max reviews per app and country",
+     "type": "integer",
+     "description": "Cap on reviews returned per app per country. Apple publishes up to 500 recent reviews per app, country and sort order (10 pages of 50). Set 0 to return only app details.",
+     "prefill": 10,
+     "default": 100,
+     "minimum": 0,
+     "maximum": 500,
+     "editor": "number"
+    },
+    "sortBy": {
+     "title": "Sort order",
+     "type": "string",
+     "description": "Most recent (default, works with Since date and delta mode) or most helpful.",
+     "editor": "select",
+     "enum": [
+      "mostrecent",
+      "mosthelpful"
+     ],
+     "enumTitles": [
+      "Most recent",
+      "Most helpful"
+     ],
+     "default": "mostrecent"
+    },
+    "searchResultsPerTerm": {
+     "title": "Apps per search term",
+     "type": "integer",
+     "description": "How many top search results to take per search term.",
+     "default": 1,
+     "minimum": 1,
+     "maximum": 20,
+     "editor": "number",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "sinceDate": {
+     "title": "Only reviews since",
+     "type": "string",
+     "description": "Skip reviews older than this. A date such as 2026-09-01, or a relative period such as '7 days', '2 weeks' or '3 months'. Paging stops at the first older review, so old pages are never fetched.",
+     "editor": "textfield"
+    },
+    "minRating": {
+     "title": "Minimum star rating",
+     "type": "integer",
+     "description": "Only return reviews with at least this many stars (1-5). Use with Maximum star rating, for example 1-2 to collect complaints only.",
+     "default": 1,
+     "minimum": 1,
+     "maximum": 5,
+     "editor": "number"
+    },
+    "maxRating": {
+     "title": "Maximum star rating",
+     "type": "integer",
+     "description": "Only return reviews with at most this many stars (1-5).",
+     "default": 5,
+     "minimum": 1,
+     "maximum": 5,
+     "editor": "number"
+    },
+    "includeAppDetails": {
+     "title": "Include app details row",
+     "type": "boolean",
+     "description": "Add one row per app and country with average rating, rating count, price, genre, developer, current version, release notes, size and more.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "deltaMode": {
+     "title": "Delta mode (only new reviews)",
+     "type": "boolean",
+     "description": "Remember review IDs between runs and return only reviews not returned before. Ideal for scheduled daily monitoring: you pay only for new reviews.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "stateKey": {
+     "title": "Delta state name",
+     "type": "string",
+     "description": "Name of the saved state used by delta mode. Use different names for independent monitors. Leave empty to use the name default.",
+     "editor": "textfield",
+     "isSecret": true
+    },
+    "maxApps": {
+     "title": "Max apps",
+     "type": "integer",
+     "description": "Safety cap on the number of apps processed in one run.",
+     "default": 50,
+     "minimum": 1,
+     "maximum": 1000,
+     "editor": "number"
+    }
+   }
+  }
+ },
+ {
+  "slug": "website-contact-extractor",
+  "title": "Website Contact Details Scraper: Emails, Phones & Socials $2/1k",
+  "description": "Website contact extractor: get emails, phone numbers and social media profiles from any list of business websites. One clean row per site with role/named email tags, E.164 phones, 8 socials and address. $0.002 per website (5 pages per site by default); unreachable sites are free.",
+  "seo": "Website Email & Phone Extractor: Contact Scraper | $2/1k",
+  "example": {
+   "body": "{\"startUrls\": [{\"url\": \"https://www.shinola.com\"}, {\"url\": \"https://buddyspizza.com\"}, {\"url\": \"https://slowsbarbq.com\"}, {\"url\": \"https://www.batchbrewingcompany.com\"}, {\"url\": \"https://greektownchicago.org\"}], \"maxPagesPerSite\": 5, \"includeNamedEmails\": true, \"sameDomainOnly\": true}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Website Contact Extractor",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "startUrls": {
+     "title": "Websites",
+     "type": "array",
+     "description": "Business websites to extract contacts from. Paste URLs or bare domains (acme.com). One row is returned per site; duplicates are merged. Upload a CSV/text file of URLs for bulk runs.",
+     "editor": "requestListSources",
+     "prefill": [
+      {
+       "url": "https://www.shinola.com"
+      }
+     ],
+     "default": [
+      {
+       "url": "https://www.shinola.com"
+      },
+      {
+       "url": "https://buddyspizza.com"
+      },
+      {
+       "url": "https://slowsbarbq.com"
+      },
+      {
+       "url": "https://www.batchbrewingcompany.com"
+      },
+      {
+       "url": "https://greektownchicago.org"
+      }
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "domains": {
+     "title": "Domains (alternative bulk list)",
+     "type": "array",
+     "description": "Optional plain list of domains, one per line (e.g. acme.com). Merged with Websites above.",
+     "editor": "stringList"
+    },
+    "onlyWithContacts": {
+     "title": "Only output sites with contacts",
+     "type": "boolean",
+     "description": "Skip rows that have no email, phone or social profile. Sites still count as crawled.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "maxPagesPerSite": {
+     "title": "Max pages per site",
+     "type": "integer",
+     "description": "Homepage plus the best contact, impressum, about, team and privacy pages found by link text and URL (in that priority). All pages of a site are included in the one per-site price.",
+     "default": 5,
+     "minimum": 1,
+     "maximum": 20,
+     "editor": "number",
+     "prefill": 2,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "includeNamedEmails": {
+     "title": "Include named (personal) emails",
+     "type": "boolean",
+     "description": "Every email is tagged 'role' (info@, sales@, support@...) or 'named' (jane.doe@...). Turn off to return role addresses only.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "sameDomainOnly": {
+     "title": "Crawl same domain only",
+     "type": "boolean",
+     "description": "Only follow links on the site's own domain and subdomains. Emails on other domains (e.g. a gmail address shown on the site) are still returned and flagged sameDomain=false.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "defaultCountry": {
+     "title": "Default phone country",
+     "type": "string",
+     "description": "ISO 2-letter country used to normalize local-format phone numbers to E.164 (+13135550142). Country-code domains (.de, .co.uk...) override it automatically.",
+     "default": "US",
+     "editor": "textfield"
+    },
+    "maxSites": {
+     "title": "Max sites",
+     "type": "integer",
+     "description": "Cap on sites crawled (and charged) this run.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 100000,
+     "editor": "number",
+     "prefill": 1
+    },
+    "maxConcurrency": {
+     "title": "Sites in parallel",
+     "type": "integer",
+     "description": "How many sites to crawl at once. Pages inside one site are fetched one after another to stay polite.",
+     "default": 8,
+     "minimum": 1,
+     "maximum": 20,
+     "editor": "number"
+    },
+    "pageTimeoutSecs": {
+     "title": "Page timeout (seconds)",
+     "type": "integer",
+     "description": "Timeout per page request.",
+     "default": 15,
+     "minimum": 3,
+     "maximum": 60,
+     "editor": "number"
+    },
+    "siteTimeoutSecs": {
+     "title": "Site timeout (seconds)",
+     "type": "integer",
+     "description": "Total time budget per site; whatever was found so far is returned.",
+     "default": 60,
+     "minimum": 10,
+     "maximum": 300,
+     "editor": "number"
+    }
+   }
+  }
+ },
+ {
+  "slug": "shopify-store-leads",
+  "title": "Shopify Leads: Store Apps, Products & Contacts | $4/1k",
+  "description": "Shopify leads with 60+ installed apps and theme detected per store. Store name, myshopify domain, country, currency, product count, price range, vendors, activity, emails, phones and socials. Discover stores by niche keyword. $0.004 per store.",
+  "seo": "Shopify Leads Scraper: Store Apps, Theme & Emails | $4/1k",
+  "example": {
+   "body": "{\"domains\": [\"allbirds.com\", \"brooklinen.com\", \"colourpop.com\", \"deathwishcoffee.com\", \"kyliecosmetics.com\"], \"keywords\": [], \"maxStores\": 5, \"includeProducts\": false}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Shopify Store Leads",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "domains": {
+     "title": "Store domains or URLs",
+     "type": "array",
+     "editor": "stringList",
+     "prefill": [
+      "allbirds.com"
+     ],
+     "default": [
+      "allbirds.com",
+      "brooklinen.com",
+      "colourpop.com",
+      "deathwishcoffee.com",
+      "kyliecosmetics.com"
+     ],
+     "description": "Websites to check, one per row (for example allbirds.com or https://www.brooklinen.com/collections/all). Each is tested for Shopify; Shopify stores get a full profile. Non-Shopify sites return a free row with isShopify=false.",
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "keywords": {
+     "title": "Discover stores by niche keyword",
+     "type": "array",
+     "editor": "stringList",
+     "default": [],
+     "description": "Optional. Niche words such as 'coffee roaster', 'candles' or 'dog treats'. Finds *.myshopify.com stores whose store name contains the keyword in the public Common Crawl URL index, then analyzes each one. Leave empty to only analyze the domains above."
+    },
+    "maxStores": {
+     "title": "Max stores",
+     "type": "integer",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 5000,
+     "description": "Cap on stores analyzed (and charged) this run, across given domains and discovered stores.",
+     "editor": "number",
+     "prefill": 1
+    },
+    "crawls": {
+     "title": "Common Crawl snapshots to search (discovery)",
+     "type": "integer",
+     "default": 2,
+     "minimum": 1,
+     "maximum": 4,
+     "description": "How many of the newest monthly Common Crawl indexes to search per keyword. More snapshots find more stores but take longer.",
+     "editor": "number",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "includeProducts": {
+     "title": "Also output products",
+     "type": "boolean",
+     "default": false,
+     "description": "Add one row per product (title, URL, vendor, type, tags, price range, compare-at price, availability, variants, SKUs, image, dates) from /products.json. Charged per product row.",
+     "editor": "checkbox"
+    },
+    "maxProductsPerStore": {
+     "title": "Max products per store",
+     "type": "integer",
+     "default": 250,
+     "minimum": 1,
+     "maximum": 10000,
+     "description": "Cap on product rows per store when 'Also output products' is on. Store summaries always use up to 500 products.",
+     "editor": "number"
+    },
+    "includeNonShopify": {
+     "title": "Return rows for non-Shopify domains",
+     "type": "boolean",
+     "default": true,
+     "description": "Keep a free row (isShopify=false) for domains that are not Shopify or are closed, so you can filter a mixed list. Never charged.",
+     "editor": "checkbox"
+    }
+   },
+   "required": [
+    "domains"
+   ]
+  }
+ },
+ {
+  "slug": "local-business-leads",
+  "title": "Local Business Leads: No-Website Finder (OpenStreetMap) $3/1k",
+  "description": "Local business leads at $0.003 per place, including businesses with no website listed. Name, phone, website, email, address, hours, socials and coordinates from OpenStreetMap open data. 75+ types, no-website, phone and website filters, optional email enrichment.",
+  "seo": "Businesses Without Websites: Local Leads | $3/1k",
+  "example": {
+   "body": "{\n  \"categories\": [\n    \"dentist\"\n  ],\n  \"locations\": [\n    \"Austin, TX\"\n  ],\n  \"maxItems\": 50,\n  \"requireWebsite\": false,\n  \"requirePhone\": false,\n  \"enrichFromWebsite\": false\n}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Local Business Leads",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "categories": {
+     "title": "Business types",
+     "type": "array",
+     "description": "What to search for, one per row. Plain words like dentist, plumber, restaurant, lawyer, hair salon, gym, car repair, real estate (75+ types and common synonyms), or any raw OpenStreetMap tag such as shop=bakery or craft=*. Unknown words are listed in the run summary and skipped.",
+     "editor": "stringList",
+     "prefill": [
+      "dentist"
+     ],
+     "default": [
+      "dentist"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "locations": {
+     "title": "Locations",
+     "type": "array",
+     "description": "Cities, counties, states, ZIP/postal codes or neighbourhoods, one per row, e.g. Austin, TX or Travis County, Texas or 78701, USA. Each is geocoded with OpenStreetMap Nominatim and searched inside its official boundary.",
+     "editor": "stringList",
+     "prefill": [
+      "Austin, TX"
+     ],
+     "default": [
+      "Austin, TX"
+     ]
+    },
+    "maxItems": {
+     "title": "Max places",
+     "type": "integer",
+     "description": "Maximum number of businesses returned (and charged) for the whole run.",
+     "default": 50,
+     "minimum": 1,
+     "maximum": 50000,
+     "editor": "number",
+     "prefill": 5
+    },
+    "requireWebsite": {
+     "title": "Only places with a website",
+     "type": "boolean",
+     "description": "Skip businesses with no website. Skipped places are not charged.",
+     "default": false,
+     "editor": "checkbox",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "onlyWithoutWebsite": {
+     "title": "Only places with NO website listed",
+     "type": "boolean",
+     "description": "Return only businesses that have no website in OpenStreetMap: prospects for web design, SEO and local-marketing offers. Note: 'no website in OpenStreetMap' usually but not always means the business has no site, so check before pitching. Places that do list a website are skipped and not charged.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "requirePhone": {
+     "title": "Only places with a phone number",
+     "type": "boolean",
+     "description": "Skip businesses with no phone number. Skipped places are not charged.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "requireEmail": {
+     "title": "Only places with an email",
+     "type": "boolean",
+     "description": "Skip businesses with no email. Works best together with 'Enrich from website', which looks for the email on the business's own site.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "enrichFromWebsite": {
+     "title": "Enrich from website (emails, phones, socials)",
+     "type": "boolean",
+     "description": "For each place with a website, fetch its homepage and contact page and extract the emails, phone numbers and social profile links the business publishes there. Charged as a separate event ($0.002) only when the site loads.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "bbox": {
+     "title": "Bounding box (optional)",
+     "type": "string",
+     "description": "Search a rectangle instead of (or in addition to) named locations: south,west,north,east in decimal degrees, e.g. 30.25,-97.76,30.29,-97.72.",
+     "editor": "textfield"
+    },
+    "latitude": {
+     "title": "Center latitude (optional)",
+     "type": "string",
+     "description": "Search a circle around a point: latitude in decimal degrees, e.g. 30.2672. Use together with longitude and radius.",
+     "editor": "textfield"
+    },
+    "longitude": {
+     "title": "Center longitude (optional)",
+     "type": "string",
+     "description": "Longitude in decimal degrees for the circle search, e.g. -97.7431.",
+     "editor": "textfield"
+    },
+    "radiusKm": {
+     "title": "Radius (km)",
+     "type": "integer",
+     "description": "Radius of the circle search in kilometres (1-50). Used only when latitude and longitude are set.",
+     "default": 5,
+     "minimum": 1,
+     "maximum": 50,
+     "editor": "number"
+    }
+   },
+   "required": [
+    "categories"
+   ]
+  }
+ },
+ {
+  "slug": "workday-jobs-scraper",
+  "title": "Workday Jobs Scraper: Any Career Site, 165+ Companies $1/1k",
+  "description": "Workday jobs from 165+ verified employers or any myworkdayjobs.com site, verified by 64 passing tests. Keyword, location and posted-date filters, full descriptions, salary ranges, remote/hybrid, and only-new-jobs delta mode. $1 per 1,000 jobs.",
+  "seo": "Workday Jobs Scraper API: myworkdayjobs.com | $1 per 1k",
+  "example": {
+   "body": "{\"companies\": [\"NVIDIA\", \"Salesforce\"], \"searchText\": \"engineer\", \"maxItemsPerCompany\": 20}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Workday Jobs Scraper input",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "companies": {
+     "title": "Companies (from the built-in directory)",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Company names from the bundled, live-verified directory of 165+ large employers on Workday, e.g. NVIDIA, Salesforce, Boeing, Pfizer, Target. Use ALL to scrape every company in the directory. Unknown names are listed in the log.",
+     "prefill": [
+      "NVIDIA"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "searchText": {
+     "title": "Search keywords",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Keywords passed to Workday's own search, e.g. data engineer, nurse, sales. Leave empty to list every open role (newest first).",
+     "prefill": "engineer"
+    },
+    "maxItemsPerCompany": {
+     "title": "Max jobs per company",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 2000,
+     "default": 100,
+     "prefill": 5,
+     "description": "Stop after this many saved jobs per career site. Workday itself never pages past 2,000 results per query.",
+     "editor": "number"
+    },
+    "careerSiteUrls": {
+     "title": "Workday career site URLs",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Any public Workday career site URL, e.g. https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite or a job link from it. Tenant, data center (wdN) and site are parsed automatically. myworkdaysite.com URLs work too.",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "locations": {
+     "title": "Location filter",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Keep only jobs whose location contains any of these words (case-insensitive), e.g. Texas, London, Remote. Multi-location jobs are checked against every location."
+    },
+    "postedWithinDays": {
+     "title": "Posted within (days)",
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 365,
+     "description": "Keep only jobs posted in the last N days, based on Workday's 'Posted N Days Ago'. 0 or empty means no date filter.",
+     "editor": "number"
+    },
+    "includeDescription": {
+     "title": "Include full job description",
+     "type": "boolean",
+     "default": false,
+     "description": "Fetch each job's detail page: full description text, exact posted date, all locations, country, salary range when stated. Billed as Job with description instead of Job listed.",
+     "editor": "checkbox"
+    },
+    "includeDescriptionHtml": {
+     "title": "Also include description HTML",
+     "type": "boolean",
+     "default": false,
+     "description": "When descriptions are on, also return the original description HTML (field descriptionHtml) for re-publishing.",
+     "editor": "checkbox"
+    },
+    "onlyNewJobs": {
+     "title": "Only new jobs (delta mode)",
+     "type": "boolean",
+     "default": false,
+     "description": "Remember job IDs in a named key-value store and return only jobs not seen in earlier runs. Ideal for scheduled runs and job alerts; seen jobs are never charged.",
+     "editor": "checkbox"
+    },
+    "deltaStoreName": {
+     "title": "Delta store name",
+     "type": "string",
+     "editor": "textfield",
+     "default": "workday-jobs-seen",
+     "description": "Name of the key-value store used by delta mode. Use different names to keep separate watch lists."
+    },
+    "maxConcurrency": {
+     "title": "Companies in parallel",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 8,
+     "default": 4,
+     "description": "How many career sites to scrape at once. Each site is always fetched one request at a time with a pause, to stay polite.",
+     "editor": "number"
+    }
+   },
+   "required": []
+  }
+ },
+ {
+  "slug": "company-news-monitor",
+  "title": "Company News Monitor: Brand & Keyword News Alerts, $2/1k",
+  "description": "Company news monitoring at $0.002 per article from 75 publisher RSS feeds (Bloomberg, CNBC, FT, TechCrunch, PR Newswire...) plus the GDELT news index when reachable. Track companies, domains or keywords. Deduped, event-tagged, delta mode for schedules.",
+  "seo": "Company News Monitor API: Brand & Keyword Alerts | $2/1k",
+  "example": {
+   "body": "{\"companies\": [\"Nvidia\", \"Stripe\"], \"timespan\": \"24h\", \"maxItems\": 50}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "News Monitor: Company & Keyword Alerts",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "companies": {
+     "title": "Companies or domains to watch",
+     "type": "array",
+     "description": "Company or brand names (Stripe, Rivian Automotive) or website domains (stripe.com). A domain is matched by its brand label (stripe) or the full domain in the headline or feed summary.",
+     "editor": "stringList",
+     "prefill": [
+      "Nvidia"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "keywords": {
+     "title": "Keywords or topics to watch",
+     "type": "array",
+     "description": "Optional extra watch phrases matched as whole words, e.g. \"lithium battery\", \"data breach\", \"FDA approval\". Each returned article lists which companies or keywords it matched.",
+     "editor": "stringList"
+    },
+    "timespan": {
+     "title": "Look-back window",
+     "type": "string",
+     "description": "Only articles published within this window. For scheduled monitoring, use a window slightly longer than your schedule and turn on delta mode.",
+     "editor": "select",
+     "enum": [
+      "1h",
+      "3h",
+      "6h",
+      "12h",
+      "24h",
+      "3d",
+      "7d",
+      "14d",
+      "30d"
+     ],
+     "enumTitles": [
+      "Last hour",
+      "Last 3 hours",
+      "Last 6 hours",
+      "Last 12 hours",
+      "Last 24 hours",
+      "Last 3 days",
+      "Last 7 days",
+      "Last 14 days",
+      "Last 30 days"
+     ],
+     "default": "24h"
+    },
+    "maxItems": {
+     "title": "Max articles",
+     "type": "integer",
+     "description": "Cap on articles delivered (and charged) this run, newest first.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 10000,
+     "editor": "number",
+     "prefill": 5
+    },
+    "deltaMode": {
+     "title": "Delta mode: only new articles since the last run",
+     "type": "boolean",
+     "description": "Remembers delivered articles (by canonical URL and headline) in a named key-value store in your account, so scheduled runs return and charge only articles you have not received yet. The memory is kept per watch list.",
+     "default": false,
+     "editor": "checkbox",
+     "prefill": false,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "stateStoreName": {
+     "title": "Delta state store name",
+     "type": "string",
+     "description": "Named key-value store that holds the delta memory. Use different names to keep separate monitors fully independent.",
+     "default": "company-news-monitor-state",
+     "editor": "textfield"
+    },
+    "sources": {
+     "title": "Sources",
+     "type": "array",
+     "description": "GDELT DOC 2.0 (global news index, 65+ languages, updated every 15 min) and publisher RSS/Atom feeds. Empty = both.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "gdelt",
+       "rss"
+      ],
+      "enumTitles": [
+       "GDELT DOC 2.0 news index",
+       "Publisher RSS/Atom feeds"
+      ]
+     }
+    },
+    "useBundledFeeds": {
+     "title": "Include the bundled feed list",
+     "type": "boolean",
+     "description": "Adds 75 verified business, finance, tech and press-release feeds (BBC, CNBC, Bloomberg, FT, NYT, TechCrunch, PR Newswire, GlobeNewswire, Business Wire and more).",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "rssFeeds": {
+     "title": "Your own RSS/Atom feeds",
+     "type": "array",
+     "description": "Optional feed URLs to add, e.g. a trade publication, a competitor's newsroom feed or a company blog feed.",
+     "editor": "stringList"
+    },
+    "mustInclude": {
+     "title": "Must also mention (any)",
+     "type": "array",
+     "description": "Optional. Keep only articles whose headline or summary also contains at least one of these words, e.g. layoffs, acquisition, lawsuit.",
+     "editor": "stringList"
+    },
+    "excludeWords": {
+     "title": "Exclude articles mentioning",
+     "type": "array",
+     "description": "Optional. Drop articles whose headline or summary contains any of these words (e.g. a different company with the same name).",
+     "editor": "stringList"
+    },
+    "eventFilter": {
+     "title": "Event filter",
+     "type": "array",
+     "description": "Keep only articles tagged with one of these business events. Empty = all articles.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "funding",
+       "layoffs",
+       "hiring",
+       "lawsuit",
+       "acquisition"
+      ],
+      "enumTitles": [
+       "Funding / IPO",
+       "Layoffs",
+       "Hiring / executive moves",
+       "Lawsuits / regulators",
+       "M&A"
+      ]
+     }
+    },
+    "gdeltTimeBudgetSecs": {
+     "title": "GDELT time budget (seconds)",
+     "type": "integer",
+     "description": "Maximum time spent waiting on GDELT (which enforces one request per 5 seconds and is sometimes slow). RSS results are delivered either way.",
+     "default": 20,
+     "minimum": 15,
+     "maximum": 600,
+     "editor": "number"
+    },
+    "sourceLanguage": {
+     "title": "Source language",
+     "type": "string",
+     "description": "Optional. ISO code or name, e.g. en, english, de, spanish. Empty = all languages. Bundled feeds are English.",
+     "editor": "textfield"
+    },
+    "sourceCountry": {
+     "title": "Source country",
+     "type": "string",
+     "description": "Optional. Country of the publisher, as ISO code or name, e.g. US, GB, united kingdom, India. Empty = all.",
+     "editor": "textfield"
+    }
+   }
+  }
+ },
+ {
+  "slug": "building-permits-leads",
+  "title": "Building Permits Leads: US City Permits and Violations, $1.5/1k",
+  "description": "Building permits leads from official city open-data portals (Chicago, NYC, LA, SF, Seattle, Austin, Baton Rouge, Montgomery Co. MD, Cincinnati). Type, status, dates, valuation, property address, contractor business if published, source link; code violations too. Delta mode. $0.0015 per record.",
+  "seo": "Building Permits Leads: US City Permits & Violations",
+  "example": {
+   "body": "{\"cities\": [\"CHI\", \"SEA\", \"AUS\"], \"recordTypes\": [\"permit\"], \"sinceDays\": 7, \"minValuation\": 0, \"maxItems\": 20}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Building Permits Leads",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "cities": {
+     "title": "Cities",
+     "type": "array",
+     "description": "Which city portals to query. Permits: CHI, NYC, LAX, SFO, SEA, AUS, BTR, MOCO. Code violations: CHI, CIN. Empty = all nine.",
+     "editor": "select",
+     "default": [
+      "CHI",
+      "SEA",
+      "AUS"
+     ],
+     "prefill": [
+      "CHI"
+     ],
+     "items": {
+      "type": "string",
+      "enum": [
+       "CHI",
+       "NYC",
+       "LAX",
+       "SFO",
+       "SEA",
+       "AUS",
+       "BTR",
+       "MOCO",
+       "CIN"
+      ],
+      "enumTitles": [
+       "Chicago, IL",
+       "New York City, NY",
+       "Los Angeles, CA",
+       "San Francisco, CA",
+       "Seattle, WA",
+       "Austin, TX",
+       "Baton Rouge, LA",
+       "Montgomery County, MD",
+       "Cincinnati, OH (violations only)"
+      ]
+     },
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "recordTypes": {
+     "title": "Record types",
+     "type": "array",
+     "description": "permit = building permits; violation = code-enforcement / building violations (only CHI and CIN publish these here).",
+     "editor": "select",
+     "default": [
+      "permit"
+     ],
+     "prefill": [
+      "permit"
+     ],
+     "items": {
+      "type": "string",
+      "enum": [
+       "permit",
+       "violation"
+      ],
+      "enumTitles": [
+       "Building permits",
+       "Code violations"
+      ]
+     }
+    },
+    "sinceDays": {
+     "title": "Since days",
+     "type": "integer",
+     "description": "Return records whose issue date (filing date for San Francisco, violation date for violations) falls in the last N days (1 to 180).",
+     "default": 7,
+     "prefill": 7,
+     "minimum": 1,
+     "maximum": 180,
+     "editor": "number"
+    },
+    "maxItems": {
+     "title": "Max items",
+     "type": "integer",
+     "description": "Cap on records delivered (and charged) this run, split evenly across the selected city sources.",
+     "default": 30,
+     "prefill": 3,
+     "minimum": 1,
+     "maximum": 20000,
+     "editor": "number"
+    },
+    "keywords": {
+     "title": "Permit type / work keywords",
+     "type": "array",
+     "description": "Keep only records whose type, work class or description contains any of these words (case-insensitive), e.g. roof, solar, demolition, new construction, hvac.",
+     "editor": "stringList",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "minValuation": {
+     "title": "Minimum valuation (USD)",
+     "type": "integer",
+     "description": "Keep only permits with a declared project value at or above this amount. 0 = no filter. Violations have no valuation and are not filtered by it.",
+     "default": 0,
+     "minimum": 0,
+     "editor": "number"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (delta)",
+     "type": "boolean",
+     "description": "Skip records already delivered in a previous run (tracked by city, record type and permit ID in a named key-value store). A repeat run on the same input delivers 0 rows and charges 0 record events.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "stateStoreName": {
+     "title": "Delta store name",
+     "type": "string",
+     "description": "Name of the named key-value store that remembers delivered records. Change it to keep separate feeds or to reset delta.",
+     "default": "building-permits-leads-seen",
+     "editor": "textfield"
+    },
+    "monitorMode": {
+     "title": "Monitor mode (only new or changed)",
+     "type": "boolean",
+     "description": "Recurring-run mode: return only permits that are new or whose status, valuation, issue date or contractor changed since the last monitor run. The first run is a baseline and returns everything in scope. Unchanged records are not returned and not charged. Schedule the actor (Schedules tab) to get a recurring feed. Each row gets a changeType of new or changed.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "reportRemoved": {
+     "title": "Also report removed (monitor mode)",
+     "type": "boolean",
+     "description": "With monitor mode on, also emit one row with changeType \"removed\" for permits/violations returned in an earlier run that the city feed no longer returns inside your sinceDays window, only for city sources read to the end. Removed rows are free: they are not charged and never count toward your charge limit or max results. Nothing is reported as removed on the baseline run, when the fetch was incomplete or hit a cap, or when your input filters changed since the baseline (the next run re-learns the baseline instead). Default off.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "monitorName": {
+     "title": "Monitor name",
+     "type": "string",
+     "description": "Name of the saved baseline. Use a different name per watch list so schedules do not overwrite each other. Default is 'default'.",
+     "default": "default",
+     "editor": "textfield"
+    }
+   }
+  }
+ },
+ {
+  "slug": "sitemap-link-inventory",
+  "title": "Sitemap Link Inventory: All URLs + Broken-Link Check, $1/1k",
+  "description": "Find every sitemap for a domain (robots.txt, nested indexes, .gz, .txt, common paths) and return all URLs with lastmod, priority, images, hreflang, path groups and duplicates. Optional broken-link, redirect, noindex checks. Partial results never fail the run. $0.001 per sitemap file / link checked.",
+  "seo": "Sitemap Extractor + Broken Link Checker, gz and nested",
+  "example": {
+   "body": "{\"startUrls\": [\"https://crawlee.dev\"], \"maxUrlsPerSite\": 100, \"checkMode\": \"sitemapUrls\", \"maxLinksToCheck\": 10}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Sitemap Link Inventory",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "startUrls": {
+     "title": "Domains or sitemap URLs",
+     "type": "array",
+     "description": "One per row. A bare domain or site URL (https:// is added if missing) triggers discovery: robots.txt Sitemap lines first, then common paths such as /sitemap.xml. A URL that looks like a sitemap (.xml, .xml.gz, .txt, or 'sitemap' in the path) is fetched directly. Public hosts only; private IPs and localhost are refused.",
+     "editor": "stringList",
+     "prefill": [
+      "https://crawlee.dev"
+     ],
+     "default": [
+      "https://crawlee.dev"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "maxUrlsPerSite": {
+     "title": "Max URLs per site",
+     "type": "integer",
+     "description": "Hard cap on unique URLs returned per site. Reading stops (and the download is aborted) once it is reached, so a 2-million-URL sitemap does not stall the run. The site summary says when the cap truncated results.",
+     "default": 1000,
+     "minimum": 1,
+     "maximum": 500000,
+     "editor": "number",
+     "prefill": 50
+    },
+    "checkMode": {
+     "title": "Link check mode",
+     "type": "string",
+     "description": "off: inventory only. sitemapUrls: request the sitemap URLs (HEAD, GET fallback) and flag 404, 5xx, unreachable, redirects and noindex. pageLinks: request the internal links found on the pages listed below (or the home page of each start URL). Each request made is a billable 'link checked' event.",
+     "editor": "select",
+     "enum": [
+      "off",
+      "sitemapUrls",
+      "pageLinks"
+     ],
+     "enumTitles": [
+      "Off (inventory only)",
+      "Check sitemap URLs",
+      "Check internal links on pages"
+     ],
+     "default": "off",
+     "prefill": "off"
+    },
+    "maxSitemapFiles": {
+     "title": "Max sitemap files per site",
+     "type": "integer",
+     "description": "Cap on sitemap files fetched per site, counting index files. Nested indexes are followed up to 6 levels deep.",
+     "default": 50,
+     "minimum": 1,
+     "maximum": 1000,
+     "editor": "number",
+     "prefill": 3,
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "includeDuplicates": {
+     "title": "Emit duplicate URL rows",
+     "type": "boolean",
+     "description": "Duplicates are always counted and listed in the site summary. Turn this on to also emit a row (isDuplicate = true) for every repeat occurrence.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "pageUrls": {
+     "title": "Pages to scan (pageLinks mode)",
+     "type": "array",
+     "description": "Pages whose internal links are checked when Link check mode is 'pageLinks'. Leave empty to use the home page of each start URL. The page fetch itself is not billed; each link checked is.",
+     "editor": "stringList"
+    },
+    "maxLinksToCheck": {
+     "title": "Max links to check",
+     "type": "integer",
+     "description": "sitemapUrls mode: per site, an evenly spaced sample across the whole inventory (not just the first rows). pageLinks mode: per page. This is the cost ceiling for check mode.",
+     "default": 100,
+     "minimum": 0,
+     "maximum": 5000,
+     "editor": "number"
+    },
+    "checkIndexability": {
+     "title": "Read noindex signals",
+     "type": "boolean",
+     "description": "Uses a GET for each checked URL (first 256 KB) to read meta robots, plus the X-Robots-Tag header, so noindex pages in the sitemap are flagged. Turn off for HEAD-only, lighter checks.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "checkCanonical": {
+     "title": "Flag canonical mismatches",
+     "type": "boolean",
+     "description": "Compare each checked page's rel=canonical with its sitemap URL (trailing slash ignored). Off by default.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "checkConcurrency": {
+     "title": "Check concurrency",
+     "type": "integer",
+     "description": "Parallel link checks. Requests to the same host are still spaced by the delay below.",
+     "default": 5,
+     "minimum": 1,
+     "maximum": 20,
+     "editor": "number"
+    },
+    "requestDelayMs": {
+     "title": "Delay between requests to one host (ms)",
+     "type": "integer",
+     "description": "Minimum gap between requests to the same host. A larger robots.txt Crawl-delay (up to 10 s) overrides this.",
+     "default": 300,
+     "minimum": 100,
+     "maximum": 10000,
+     "editor": "number"
+    },
+    "requestTimeoutSecs": {
+     "title": "Request timeout (seconds)",
+     "type": "integer",
+     "description": "Time to first response headers for each request. Slow servers become 'timeout' rows, never failed runs.",
+     "default": 20,
+     "minimum": 5,
+     "maximum": 60,
+     "editor": "number"
+    },
+    "timeBudgetSecs": {
+     "title": "Time budget (seconds)",
+     "type": "integer",
+     "description": "Soft limit for the whole run. When it passes, the actor stops fetching and returns what it has with status 'partial-time-budget'.",
+     "default": 540,
+     "minimum": 30,
+     "maximum": 3300,
+     "editor": "number"
+    },
+    "userAgent": {
+     "title": "User-Agent",
+     "type": "string",
+     "description": "Sent on every request and matched against robots.txt (the default token is SitemapLinkInventoryBot).",
+     "default": "SitemapLinkInventoryBot/1.0 (+https://apify.com/transparent_meteorite)",
+     "editor": "textfield"
+    },
+    "monitorMode": {
+     "title": "Monitor mode (only new or changed)",
+     "type": "boolean",
+     "description": "Recurring-run mode: return only sitemap URLs that are new or whose lastmod changed since the last monitor run; sites without lastmod only report new URLs. Best with Check mode off. The first run is a baseline and returns everything in scope. Unchanged records are not returned and not charged. Schedule the actor (Schedules tab) to get a recurring feed. Each row gets a changeType of new or changed.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "reportRemoved": {
+     "title": "Also report removed (monitor mode)",
+     "type": "boolean",
+     "description": "With monitor mode on, also emit one row with changeType \"removed\" for URLs that were in a site's sitemap in an earlier run and are gone now, only for sites whose sitemaps were read completely this run. Removed rows are free: they are not charged and never count toward your charge limit or max results. Nothing is reported as removed on the baseline run, when the fetch was incomplete or hit a cap, or when your input filters changed since the baseline (the next run re-learns the baseline instead). Default off.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "monitorName": {
+     "title": "Monitor name",
+     "type": "string",
+     "description": "Name of the saved baseline. Use a different name per watch list so schedules do not overwrite each other. Default is 'default'.",
+     "default": "default",
+     "editor": "textfield"
+    }
+   },
+   "required": [
+    "startUrls"
+   ]
+  }
+ },
+ {
+  "slug": "developer-signals",
+  "title": "Hacker News, npm & PyPI Developer Signals",
+  "description": "Track Hacker News mentions, Show HN and Launch HN posts, plus npm and PyPI package versions, repo links and download counts, in one dataset. Keyless public APIs. From $0.001 per item.",
+  "seo": "Hacker News, npm and PyPI Developer Signals",
+  "example": {
+   "body": "{\"modes\": [\"hnSearch\", \"showHn\", \"npmPackages\", \"pypiPackages\"], \"hnKeywords\": [\"apify\"], \"sinceDate\": \"90 days\", \"maxItemsPerQuery\": 5, \"npmPackages\": [\"crawlee\"], \"pypiPackages\": [\"apify-client\"]}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Developer Signals",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "modes": {
+     "title": "Modes to run",
+     "type": "array",
+     "description": "hnSearch: Hacker News stories (and optionally comments) matching your keywords or domains. showHn: Show HN and/or Launch HN posts. npmPackages: npm metadata and download counts. pypiPackages: PyPI metadata and download counts.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "hnSearch",
+       "showHn",
+       "npmPackages",
+       "pypiPackages"
+      ],
+      "enumTitles": [
+       "Hacker News search",
+       "Show HN / Launch HN",
+       "npm packages",
+       "PyPI packages"
+      ]
+     },
+     "default": [
+      "hnSearch",
+      "npmPackages"
+     ],
+     "prefill": [
+      "hnSearch",
+      "npmPackages"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "hnKeywords": {
+     "title": "Hacker News keywords",
+     "type": "array",
+     "description": "One search per row (brand, product, competitor, technology). Used by hnSearch; in showHn mode they filter the launches (leave empty to get all recent launches). Example: [\"apify\",\"web scraping\"].",
+     "editor": "stringList",
+     "prefill": [
+      "apify"
+     ]
+    },
+    "npmPackages": {
+     "title": "npm packages",
+     "type": "array",
+     "description": "Package names, scoped names allowed (@scope/name). Returns latest version, description, license, repository, homepage, keywords plus daily, weekly and monthly downloads. Example: [\"crawlee\",\"@apify/tsconfig\"].",
+     "editor": "stringList",
+     "prefill": [
+      "crawlee"
+     ]
+    },
+    "pypiPackages": {
+     "title": "PyPI packages",
+     "type": "array",
+     "description": "Package names. Returns latest version, summary, license, Python requirement, project links plus last day, week and month downloads from pypistats.org when available. Example: [\"requests\",\"apify-client\"].",
+     "editor": "stringList"
+    },
+    "sinceDate": {
+     "title": "Since",
+     "type": "string",
+     "description": "Only Hacker News items created after this. An ISO date (2026-09-01) or a relative span such as 30 days, 12 weeks or 6 months. Empty means no limit. Example: \"2026-09-01\" or \"30 days\".",
+     "editor": "textfield",
+     "default": "90 days",
+     "prefill": "30 days"
+    },
+    "maxItemsPerQuery": {
+     "title": "Max items per query",
+     "type": "integer",
+     "description": "Cap on Hacker News rows per keyword, per domain and per launch type. Algolia exposes at most 1,000 hits per query. This is your cost ceiling at $0.001 per row.",
+     "default": 50,
+     "minimum": 1,
+     "maximum": 1000,
+     "prefill": 3,
+     "editor": "number"
+    },
+    "hnDomains": {
+     "title": "Hacker News domains",
+     "type": "array",
+     "description": "Find stories that link to a domain, for example github.com/yourorg or yourproduct.com. One per row, no https://.",
+     "editor": "stringList",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "hnIncludeComments": {
+     "title": "Include comments that mention keywords",
+     "type": "boolean",
+     "description": "Adds comment rows (recordType comment) for keyword searches. Each comment row is billed as one Hacker News item.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "hnSort": {
+     "title": "Sort order",
+     "type": "string",
+     "description": "date: newest first. relevance: Algolia's relevance ranking.",
+     "editor": "select",
+     "enum": [
+      "date",
+      "relevance"
+     ],
+     "enumTitles": [
+      "Newest first",
+      "Relevance"
+     ],
+     "default": "date"
+    },
+    "hnMinPoints": {
+     "title": "Minimum points",
+     "type": "integer",
+     "description": "Skip stories with fewer points. 0 keeps everything.",
+     "default": 0,
+     "minimum": 0,
+     "maximum": 10000,
+     "editor": "number"
+    },
+    "showHnKind": {
+     "title": "Launch type (showHn mode)",
+     "type": "string",
+     "description": "Which launch posts to return in showHn mode.",
+     "editor": "select",
+     "enum": [
+      "both",
+      "showHn",
+      "launchHn"
+     ],
+     "enumTitles": [
+      "Show HN and Launch HN",
+      "Show HN only",
+      "Launch HN only"
+     ],
+     "default": "both"
+    },
+    "timeBudgetSecs": {
+     "title": "Time budget (seconds)",
+     "type": "integer",
+     "description": "Soft limit. When it passes, the actor stops and returns what it has.",
+     "default": 300,
+     "minimum": 30,
+     "maximum": 3000,
+     "editor": "number"
+    }
+   },
+   "description": "Track developer-ecosystem signals: Hacker News mentions and Show HN launches, npm and PyPI package metadata and download counts. Input: modes[] (hnSearch, showHn, npmPackages, pypiPackages) plus the matching hnKeywords[], npmPackages[], pypiPackages[]; optional sinceDate, hnMinPoints, maxItemsPerQuery. Output: one row per HN item or package with a recordType. Example input: {\"modes\":[\"hnSearch\",\"npmPackages\"],\"hnKeywords\":[\"apify\"],\"npmPackages\":[\"crawlee\"],\"sinceDate\":\"30 days\"}."
+  }
+ },
+ {
+  "slug": "sanctions-screening",
+  "title": "Sanctions Screening: OFAC SDN, EU, UN & UK Lists, Fuzzy Match",
+  "description": "Screen names of people, companies and vessels against the official OFAC SDN, OFAC Consolidated, UN, EU and UK sanctions lists. Fuzzy match handles diacritics, transliteration, word order and aliases; optional DOB and country. Screening aid, not legal advice. $0.004 per name.",
+  "seo": "Sanctions List Screening API: OFAC, EU, UN, UK",
+  "example": {
+   "body": "{\"names\": [\"Rafael Caro-Quintero\", \"Mohamed Ali\", \"Acme Plumbing Supplies LLC\"], \"lists\": [\"ofac_sdn\", \"un\"], \"minScore\": 88, \"maxMatchesPerName\": 3}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Sanctions Screening",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "names": {
+     "title": "Names to screen",
+     "type": "array",
+     "description": "One name per row: a person, company or vessel. Plain strings work. To add a date of birth, country or type to a name, use the JSON editor and give objects such as {\"name\": \"Ivan Petrov\", \"dob\": \"1975-03-02\", \"country\": \"Russia\", \"type\": \"person\"}. Word order, case, diacritics and punctuation do not matter. Up to 5,000 names per run. Example: [\"Acme Plumbing Supplies LLC\",\"Rafael Caro-Quintero\"].",
+     "editor": "stringList",
+     "prefill": [
+      "Rafael Caro-Quintero",
+      "Acme Plumbing Supplies LLC"
+     ],
+     "default": [
+      "Rafael Caro-Quintero",
+      "Mohamed Ali",
+      "Acme Plumbing Supplies LLC"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "lists": {
+     "title": "Sanctions lists to check",
+     "type": "array",
+     "description": "Which official lists to download for this run. ofac_sdn = US Treasury Specially Designated Nationals (about 19,000 entries). ofac_consolidated = US non-SDN consolidated lists (SSI, FSE, NS-MBS and others). un = UN Security Council consolidated list. eu = EU consolidated financial sanctions list. uk = UK sanctions list (FCDO / OFSI). Each requested list must load for a name to be reported as clear.",
+     "editor": "select",
+     "default": [
+      "ofac_sdn",
+      "ofac_consolidated",
+      "un",
+      "eu",
+      "uk"
+     ],
+     "prefill": [
+      "ofac_sdn"
+     ],
+     "items": {
+      "type": "string",
+      "enum": [
+       "ofac_sdn",
+       "ofac_consolidated",
+       "un",
+       "eu",
+       "uk"
+      ],
+      "enumTitles": [
+       "OFAC SDN (US)",
+       "OFAC Consolidated non-SDN (US)",
+       "UN Security Council",
+       "EU consolidated",
+       "UK sanctions list"
+      ]
+     }
+    },
+    "minScore": {
+     "title": "Minimum match score (50-100)",
+     "type": "integer",
+     "description": "A name is flagged possible_match when its best score reaches this value. 100 means identical after normalisation. 85 to 90 is a sensible start for screening; lower it to catch more spelling variants at the cost of more false positives.",
+     "default": 85,
+     "minimum": 50,
+     "maximum": 100,
+     "prefill": 88,
+     "editor": "number"
+    },
+    "maxMatchesPerName": {
+     "title": "Max matches per name",
+     "type": "integer",
+     "description": "How many of the best-scoring list entries to return for each flagged name (one per list entry, best alias shown).",
+     "default": 3,
+     "minimum": 1,
+     "maximum": 20,
+     "editor": "number",
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "entityType": {
+     "title": "Default name type",
+     "type": "string",
+     "description": "Restrict matching to people, organisations or vessels for names that do not give their own type. 'any' compares against everything.",
+     "editor": "select",
+     "enum": [
+      "any",
+      "person",
+      "entity",
+      "vessel"
+     ],
+     "enumTitles": [
+      "Any (people, companies, vessels)",
+      "Person",
+      "Company / organisation",
+      "Vessel / aircraft"
+     ],
+     "default": "any"
+    },
+    "includeAliases": {
+     "title": "Match against aliases (a.k.a., f.k.a.)",
+     "type": "boolean",
+     "description": "On by default. Aliases catch the many sanctioned parties listed under several spellings. Weak or low-quality aliases are included and marked.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "monitorMode": {
+     "title": "Monitor mode (only new or changed)",
+     "type": "boolean",
+     "description": "Recurring-run mode: return only names whose screening outcome changed (new name, status flip, new or removed matched list entry, or a score-band change); unchanged names are skipped and not charged. The first run is a baseline and returns everything in scope. Unchanged records are not returned and not charged. Schedule the actor (Schedules tab) to get a recurring feed. Each row gets a changeType of new or changed.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "reportRemoved": {
+     "title": "Also report removed (monitor mode)",
+     "type": "boolean",
+     "description": "With monitor mode on, also emit one row with changeType \"removed\" for names that were on the watch list in an earlier run but are not in this run's names input (dropped from the list; a delisting shows up as a normal \"changed\" row, not here). Removed rows are free: they are not charged and never count toward your charge limit or max results. Nothing is reported as removed on the baseline run, when the fetch was incomplete or hit a cap, or when your input filters changed since the baseline (the next run re-learns the baseline instead). Default off.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "monitorName": {
+     "title": "Monitor name",
+     "type": "string",
+     "description": "Name of the saved baseline. Use a different name per watch list so schedules do not overwrite each other. Default is 'default'. Example: \"vendor-onboarding\".",
+     "default": "default",
+     "editor": "textfield"
+    }
+   },
+   "required": [
+    "names"
+   ],
+   "description": "Screen names of people, companies or vessels against official sanctions lists (for example OFAC SDN) with fuzzy matching. Input: names[] (strings or {name,dob,country,type} objects), lists[], minScore (50-100). Output: one row per input name with recordType match or clear, ranked matches and a plain-language note. Example input: {\"names\":[\"Acme Plumbing Supplies LLC\"],\"lists\":[\"ofac_sdn\"],\"minScore\":88}. Screening aid only, not legal advice."
+  }
+ },
+ {
+  "slug": "federal-grants-contracts",
+  "title": "Federal Grants & Contracts Finder: Grants.gov + USAspending",
+  "description": "Open and forecasted federal grant opportunities from Grants.gov plus contract and grant awards from USAspending.gov, in one unified schema: deadlines, ceilings, amounts, agency, NAICS/PSC, recipient, and a link to the official record. No API key. $0.002 per opportunity, $0.0015 per award.",
+  "seo": "Federal Grants & Contracts Finder: Grants.gov + USAspending",
+  "example": {
+   "body": "{ \"keywords\": [\"cybersecurity\"], \"mode\": \"both\", \"maxItems\": 12, \"awardKinds\": [\"contracts\"], \"awardsLookbackDays\": 365, \"minAwardAmount\": 1000000 }",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Federal Grants & Contracts Finder",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "mode": {
+     "title": "What to fetch",
+     "type": "string",
+     "description": "openOpportunities: open and forecasted grant opportunities from Grants.gov. awards: contract and grant awards already made, from USAspending.gov. both: run the two and merge into one unified output.",
+     "editor": "select",
+     "enum": [
+      "openOpportunities",
+      "awards",
+      "both"
+     ],
+     "enumTitles": [
+      "Open grant opportunities (Grants.gov)",
+      "Awards already made (USAspending.gov)",
+      "Both"
+     ],
+     "default": "both",
+     "prefill": "openOpportunities",
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "The few settings most runs need. The prefilled values give a small, fast test run."
+    },
+    "keywords": {
+     "title": "Keywords",
+     "type": "array",
+     "description": "One search per keyword, results merged and de-duplicated. Leave empty to list the newest opportunities / largest recent awards with only your other filters. Example: [\"cybersecurity\",\"rural broadband\"].",
+     "editor": "stringList",
+     "prefill": [
+      "cybersecurity"
+     ],
+     "default": [
+      "cybersecurity"
+     ]
+    },
+    "maxItems": {
+     "title": "Max rows in total",
+     "type": "integer",
+     "description": "Hard cap on rows delivered (and billed) across everything. Opportunities are delivered first, then awards.",
+     "default": 50,
+     "minimum": 1,
+     "maximum": 5000,
+     "editor": "number",
+     "prefill": 3
+    },
+    "opportunityStatuses": {
+     "title": "Opportunity status",
+     "type": "array",
+     "description": "posted = open for applications, forecasted = announced in advance. (Closed and archived opportunities are not offered here.)",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "posted",
+       "forecasted"
+      ]
+     },
+     "default": [
+      "posted",
+      "forecasted"
+     ],
+     "sectionCaption": "Filters, limits and advanced options",
+     "sectionDescription": "Optional. Safe to leave as they are; the defaults suit most runs."
+    },
+    "agencies": {
+     "title": "Grants.gov agency codes",
+     "type": "array",
+     "description": "Optional. Grants.gov top-level agency codes, for example HHS, DOC, DOE, USDA, NSF, DOD, ED, DOT. Matches the agency filter on grants.gov.",
+     "editor": "stringList",
+     "default": []
+    },
+    "eligibilityCodes": {
+     "title": "Applicant type codes",
+     "type": "array",
+     "description": "Optional. Grants.gov eligibility codes: 00 State governments, 01 County, 02 City or township, 04 Special district, 05 Independent school districts, 06 Public/state-controlled higher ed, 07 Federally recognized tribes, 12 Nonprofits with 501(c)(3), 13 Nonprofits without 501(c)(3), 20 Private higher ed, 21 Individuals, 22 For-profit (not small business), 23 Small businesses, 25 Others, 99 Unrestricted. Example: [\"23\",\"12\"].",
+     "editor": "stringList",
+     "default": []
+    },
+    "fundingCategories": {
+     "title": "Funding category codes",
+     "type": "array",
+     "description": "Optional. Grants.gov category codes, for example ST (science and technology), HL (health), ED (education), EN (energy), AG (agriculture), BC (business and commerce), CD (community development), ENV (environment), HU (humanities), IS (information and statistics), TR (transportation).",
+     "editor": "stringList",
+     "default": []
+    },
+    "assistanceListings": {
+     "title": "Assistance Listing (CFDA) numbers",
+     "type": "array",
+     "description": "Optional. For example 11.029. Opportunities for these programs only.",
+     "editor": "stringList",
+     "default": []
+    },
+    "closingWithinDays": {
+     "title": "Only closing within N days",
+     "type": "integer",
+     "description": "Optional. Keep opportunities whose close date is within this many days from today. Opportunities with no close date (rolling) are kept only if you leave this empty.",
+     "minimum": 1,
+     "maximum": 3650,
+     "editor": "number"
+    },
+    "includeDetails": {
+     "title": "Fetch opportunity details",
+     "type": "boolean",
+     "description": "One extra request per opportunity to Grants.gov fetchOpportunity: adds description, award ceiling and floor, expected number of awards, eligible applicants, funding instruments and posting/archive dates. No extra charge.",
+     "default": true,
+     "editor": "checkbox",
+     "prefill": false
+    },
+    "awardKinds": {
+     "title": "Award kinds",
+     "type": "array",
+     "description": "contracts = procurement contracts and delivery orders; grants = grants and cooperative agreements.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "contracts",
+       "grants"
+      ]
+     },
+     "default": [
+      "contracts",
+      "grants"
+     ]
+    },
+    "awardsLookbackDays": {
+     "title": "Awards look-back (days)",
+     "type": "integer",
+     "description": "Awards with activity in the last N days. Ignored when both award dates below are set. USAspending data starts at 2007-10-01.",
+     "default": 365,
+     "minimum": 1,
+     "maximum": 6000,
+     "editor": "number"
+    },
+    "awardsFromDate": {
+     "title": "Awards from date",
+     "type": "string",
+     "description": "Optional, YYYY-MM-DD. Overrides the look-back. Example: \"2026-01-01\".",
+     "editor": "textfield"
+    },
+    "awardsToDate": {
+     "title": "Awards to date",
+     "type": "string",
+     "description": "Optional, YYYY-MM-DD. Defaults to today. Example: \"2026-09-30\".",
+     "editor": "textfield"
+    },
+    "awardingAgencies": {
+     "title": "Awarding agencies (USAspending)",
+     "type": "array",
+     "description": "Optional. Top-tier agency names exactly as USAspending writes them, for example Department of Defense, Department of Health and Human Services, National Aeronautics and Space Administration.",
+     "editor": "stringList",
+     "default": []
+    },
+    "naicsCodes": {
+     "title": "NAICS codes",
+     "type": "array",
+     "description": "Optional. Contract awards only. For example 541512 or the prefix 5415.",
+     "editor": "stringList",
+     "default": []
+    },
+    "pscCodes": {
+     "title": "PSC codes",
+     "type": "array",
+     "description": "Optional. Contract awards only. Product/Service Codes such as D302 (IT systems development). Example: [\"D302\",\"R425\"].",
+     "editor": "stringList",
+     "default": []
+    },
+    "placeOfPerformanceStates": {
+     "title": "Place of performance states",
+     "type": "array",
+     "description": "Optional. Two-letter US state codes, for example MI, TX.",
+     "editor": "stringList",
+     "default": []
+    },
+    "recipientSearch": {
+     "title": "Recipient name contains",
+     "type": "string",
+     "description": "Optional. Track a competitor or a customer: awards whose recipient name matches this text. Example: \"Lockheed\".",
+     "editor": "textfield"
+    },
+    "minAwardAmount": {
+     "title": "Minimum award amount (USD)",
+     "type": "integer",
+     "description": "Optional. Awards at or above this total amount.",
+     "minimum": 0,
+     "editor": "number"
+    },
+    "maxAwardAmount": {
+     "title": "Maximum award amount (USD)",
+     "type": "integer",
+     "description": "Optional. Awards at or below this total amount.",
+     "minimum": 0,
+     "editor": "number"
+    },
+    "awardsSortBy": {
+     "title": "Sort awards by",
+     "type": "string",
+     "description": "Largest amount first, or most recent start date first.",
+     "editor": "select",
+     "enum": [
+      "amount",
+      "startDate"
+     ],
+     "enumTitles": [
+      "Largest amount",
+      "Newest start date"
+     ],
+     "default": "amount"
+    },
+    "monitorMode": {
+     "title": "Monitor mode (only new or changed)",
+     "type": "boolean",
+     "description": "Recurring-run mode: return only opportunities and awards that are new or whose status, close date, amounts or recipient changed since the last monitor run (use a high enough Max items so the whole result window is covered). The first run is a baseline and returns everything in scope. Unchanged records are not returned and not charged. Schedule the actor (Schedules tab) to get a recurring feed. Each row gets a changeType of new or changed.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "reportRemoved": {
+     "title": "Also report removed (monitor mode)",
+     "type": "boolean",
+     "description": "With monitor mode on, also emit one row with changeType \"removed\" for opportunities or awards returned in an earlier run that the same searches no longer return (closed, archived, aged out or edited), only if every search ran to its end. Removed rows are free: they are not charged and never count toward your charge limit or max results. Nothing is reported as removed on the baseline run, when the fetch was incomplete or hit a cap, or when your input filters changed since the baseline (the next run re-learns the baseline instead). Default off.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "monitorName": {
+     "title": "Monitor name",
+     "type": "string",
+     "description": "Name of the saved baseline. Use a different name per watch list so schedules do not overwrite each other. Default is 'default'. Example: \"cyber-watch\".",
+     "default": "default",
+     "editor": "textfield"
+    }
+   },
+   "description": "Find US federal grant opportunities (Grants.gov) and awarded grants and contracts (USAspending). Input: mode, keywords[]; optional agencies, NAICS/PSC codes, states, amount range, closingWithinDays, monitorMode (only new/changed). Output: one row per opportunity or award with title, agency, amounts, dates and links. Example input: {\"mode\":\"openOpportunities\",\"keywords\":[\"cybersecurity\"],\"maxItems\":50}."
+  }
+ },
+ {
+  "slug": "amazon-product-search",
+  "title": "Amazon Product Search: prices, ratings, ASINs",
+  "description": "Amazon product data at $0.004 per product, 20% below the alternative we tested (free plan), with 41 filled fields per product in that test. Search by keyword, URL or ASIN: price, list price, rating, reviews, Prime, badges, bought-in-past-month, images and specs. No login.",
+  "seo": "Amazon Product Search Scraper: Prices, ASINs",
+  "example": {
+   "body": "{ \"helloWorld\": 123 }",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Amazon Product Search",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "keywords": {
+     "title": "Search keywords",
+     "type": "array",
+     "description": "One search per line, e.g. \"wireless mouse\". Results come in Amazon's own ranking order.",
+     "editor": "stringList",
+     "prefill": [
+      "wireless mouse"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "Give keywords, ASINs or Amazon URLs (any mix). The prefilled value is a small test run."
+    },
+    "urls": {
+     "title": "Amazon search or product URLs",
+     "type": "array",
+     "description": "amazon.com, .co.uk, .de or .ca search pages (/s?k=...) or product pages (/dp/ASIN). The marketplace is read from the URL. Example: [\"https://www.amazon.com/s?k=wireless+mouse\",\"https://www.amazon.com/dp/B07CMS5Q6P\"].",
+     "editor": "stringList"
+    },
+    "asins": {
+     "title": "ASINs",
+     "type": "array",
+     "description": "10-character product IDs, e.g. B07CMS5Q6P. Fetched from the marketplace chosen below.",
+     "editor": "stringList"
+    },
+    "marketplace": {
+     "title": "Marketplace",
+     "type": "string",
+     "description": "Used for keywords and ASINs. URLs carry their own marketplace.",
+     "enum": [
+      "US",
+      "UK",
+      "DE",
+      "CA"
+     ],
+     "default": "US",
+     "enumTitles": [
+      "United States (amazon.com)",
+      "United Kingdom (amazon.co.uk)",
+      "Germany (amazon.de)",
+      "Canada (amazon.ca)"
+     ]
+    },
+    "maxItems": {
+     "title": "Max products",
+     "type": "integer",
+     "description": "Stop after this many products in total (you pay per product delivered).",
+     "default": 20,
+     "minimum": 1,
+     "maximum": 5000
+    },
+    "maxPages": {
+     "title": "Search pages per keyword",
+     "type": "integer",
+     "description": "How many result pages to read per search (about 16-60 products each).",
+     "default": 1,
+     "minimum": 1,
+     "maximum": 20
+    },
+    "includeDetails": {
+     "title": "Open each product page too",
+     "type": "boolean",
+     "description": "On by default: adds breadcrumbs, feature bullets, all images, dimensions, weight, seller, variants, A+ content and availability (about 42 fields instead of 17). One extra request per product, fetched 8 at a time. Turn off for a faster, lighter search-card-only run.",
+     "default": true
+    },
+    "autoProxyFallback": {
+     "title": "Switch to residential proxy when blocked",
+     "type": "boolean",
+     "description": "On by default: if you left the proxy off and Amazon blocks the datacenter IP, the run switches itself to Apify residential proxy instead of returning nothing. Turn off to never use a proxy you did not choose.",
+     "default": true
+    },
+    "proxyConfiguration": {
+     "title": "Proxy",
+     "type": "object",
+     "description": "Amazon blocks many datacenter IPs. Residential proxy gives the best success rate; each retry uses a fresh session.",
+     "editor": "proxy",
+     "default": {
+      "useApifyProxy": false
+     }
+    }
+   },
+   "description": "Get Amazon product data from public pages (US, UK, DE, CA), no login. Input: at least one of keywords[], urls[] (search or product pages) or asins[]; marketplace (US|UK|DE|CA), maxItems (default 20), maxPages, includeDetails (default true). Output: one row per unique ASIN with price, list price, rating, review count, Prime, badges, images, features, seller, dimensions, breadcrumbs. Example input: {\"keywords\":[\"wireless mouse\"],\"marketplace\":\"US\",\"maxItems\":20}. Charged per product delivered."
+  }
+ },
+ {
+  "slug": "linkedin-public-jobs",
+  "title": "LinkedIn Public Jobs Scraper (no login) | Salary & Level",
+  "description": "28 filled fields per LinkedIn job vs 23 in our side-by-side test, at a lower price per job. Search public guest job listings with no login or cookies: keywords, location, date, remote/hybrid, level, type, company. Title, company, salary, seniority, industries, full description. Deduped.",
+  "seo": "LinkedIn Public Jobs Scraper, No Login",
+  "example": {
+   "body": "{ \"helloWorld\": 123 }",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "LinkedIn Public Jobs",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "keywords": {
+     "title": "Keywords",
+     "type": "string",
+     "description": "Job title or skill, e.g. \"data analyst\". Example: \"registered nurse\".",
+     "editor": "textfield",
+     "prefill": "data analyst",
+     "sectionCaption": "What to search",
+     "sectionDescription": "Only LinkedIn's public no-login job pages are read."
+    },
+    "location": {
+     "title": "Location",
+     "type": "string",
+     "description": "City, region or country as you would type it on LinkedIn, e.g. \"Detroit, Michigan\" or \"United Kingdom\".",
+     "editor": "textfield",
+     "prefill": "United States"
+    },
+    "geoId": {
+     "title": "LinkedIn geoId (optional)",
+     "type": "string",
+     "description": "Exact LinkedIn location id, e.g. 103644278 for the United States. Used together with or instead of the free-text location.",
+     "editor": "textfield"
+    },
+    "datePosted": {
+     "title": "Date posted",
+     "type": "string",
+     "description": "Only jobs posted within this window.",
+     "enum": [
+      "any",
+      "24h",
+      "week",
+      "month"
+     ],
+     "enumTitles": [
+      "Any time",
+      "Past 24 hours",
+      "Past week",
+      "Past month"
+     ],
+     "default": "any",
+     "editor": "select"
+    },
+    "workplace": {
+     "title": "Workplace type",
+     "type": "array",
+     "description": "On-site, remote, hybrid (several allowed). Empty = all.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "onsite",
+       "remote",
+       "hybrid"
+      ],
+      "enumTitles": [
+       "On-site",
+       "Remote",
+       "Hybrid"
+      ]
+     }
+    },
+    "experienceLevel": {
+     "title": "Experience level",
+     "type": "array",
+     "description": "Empty = all levels. Allowed: internship, entry, associate, mid-senior, director, executive. Example: [\"entry\",\"associate\"].",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "internship",
+       "entry",
+       "associate",
+       "mid-senior",
+       "director",
+       "executive"
+      ],
+      "enumTitles": [
+       "Internship",
+       "Entry level",
+       "Associate",
+       "Mid-Senior level",
+       "Director",
+       "Executive"
+      ]
+     }
+    },
+    "jobType": {
+     "title": "Job type",
+     "type": "array",
+     "description": "Empty = all types. Allowed: full-time, part-time, contract, temporary, volunteer, internship, other. Example: [\"full-time\",\"contract\"].",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "full-time",
+       "part-time",
+       "contract",
+       "temporary",
+       "volunteer",
+       "internship",
+       "other"
+      ],
+      "enumTitles": [
+       "Full-time",
+       "Part-time",
+       "Contract",
+       "Temporary",
+       "Volunteer",
+       "Internship",
+       "Other"
+      ]
+     }
+    },
+    "companyFilter": {
+     "title": "Company filter",
+     "type": "array",
+     "description": "LinkedIn company ids (digits, filtered by LinkedIn) or company names / linkedin.com/company/<slug> URLs (matched against the company name). Empty = any company. Example: [\"Google\",\"https://www.linkedin.com/company/stripe\"].",
+     "editor": "stringList"
+    },
+    "maxItems": {
+     "title": "Max jobs",
+     "type": "integer",
+     "description": "Stop after this many jobs (1 to 1000). You are charged per job delivered.",
+     "default": 25,
+     "minimum": 1,
+     "maximum": 1000,
+     "editor": "number",
+     "sectionCaption": "Output and limits"
+    },
+    "includeDescription": {
+     "title": "Include description",
+     "type": "boolean",
+     "description": "Plain-text job description. Same cost either way; turn off for a lighter dataset.",
+     "default": true,
+     "editor": "checkbox"
+    },
+    "includeDescriptionHtml": {
+     "title": "Also include description HTML",
+     "type": "boolean",
+     "description": "Adds descriptionHtml with the original formatting.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new jobs since last run",
+     "type": "boolean",
+     "description": "Skips jobs already delivered by earlier runs that share the same state store. Skipped jobs are not charged.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "stateStoreName": {
+     "title": "State store name",
+     "type": "string",
+     "description": "Named key-value store remembering delivered job ids. Use a different name per saved search. Example: \"detroit-analyst-jobs\".",
+     "default": "linkedin-public-jobs-seen",
+     "editor": "textfield"
+    },
+    "proxyConfiguration": {
+     "title": "Proxy",
+     "type": "object",
+     "description": "Apify Proxy (datacenter by default). Falls back to a direct connection if the proxy fails.",
+     "editor": "proxy",
+     "default": {
+      "useApifyProxy": true
+     },
+     "prefill": {
+      "useApifyProxy": true
+     },
+     "sectionCaption": "Advanced"
+    },
+    "includeCompanyDetails": {
+     "title": "Include company details",
+     "type": "boolean",
+     "description": "Adds website, industry, size and headquarters from the public LinkedIn company page (one extra request per unique company, cached). Skipped automatically if LinkedIn walls it.",
+     "default": true,
+     "editor": "checkbox"
+    }
+   },
+   "description": "Search LinkedIn public job listings without login. Input: keywords (string) plus location (string) or geoId; optional datePosted (any|24h|week|month), workplace[], experienceLevel[], jobType[], companyFilter[], maxItems (1-1000). Output: one dataset row per job with title, company, location, ISO postedAt, salary fields, seniority, employmentType, industries, applyUrl and description. Example input: {\"keywords\":\"data analyst\",\"location\":\"United States\",\"datePosted\":\"week\",\"maxItems\":25}. Charged per job delivered."
+  }
+ },
+ {
+  "slug": "meta-ad-library",
+  "title": "Meta Ad Library Scraper: Facebook & Instagram Ads",
+  "description": "Image or video URL on 100% of ads vs 70% in our side-by-side test, at $0.00065 per ad. Search the public Meta Ad Library by keyword, advertiser Page id or library URL. No login. Flat rows: ad text, headline, link, CTA, media URLs, ISO dates, platforms, variations.",
+  "seo": "Meta Ad Library Scraper: Facebook and Instagram Ads",
+  "example": {
+   "body": "{ \"helloWorld\": 123 }",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Meta Ad Library Scraper",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "searchTerms": {
+     "title": "Search terms",
+     "type": "array",
+     "description": "Keywords or advertiser names, one per line (for example \"running shoes\"). Each term is searched in the public Ad Library.",
+     "editor": "stringList",
+     "prefill": [
+      "running shoes"
+     ],
+     "sectionCaption": "What to fetch",
+     "sectionDescription": "Give search terms, advertiser Page ids, or Ad Library URLs. The prefilled value is a small test run."
+    },
+    "pageIds": {
+     "title": "Advertiser Page ids",
+     "type": "array",
+     "description": "Numeric Facebook Page ids (the view_all_page_id in an Ad Library URL). Returns every ad that Page runs. Example: [\"866655706540346\"].",
+     "editor": "stringList"
+    },
+    "libraryUrls": {
+     "title": "Ad Library URLs",
+     "type": "array",
+     "description": "Paste search URLs copied from facebook.com/ads/library. Their filters are used as they are. Example: [\"https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&q=running%20shoes\"].",
+     "editor": "stringList"
+    },
+    "country": {
+     "title": "Country",
+     "type": "string",
+     "description": "Two-letter country code, or ALL. Ads shown in this country. Example: \"US\", \"GB\", \"ALL\".",
+     "default": "US",
+     "editor": "textfield"
+    },
+    "activeStatus": {
+     "title": "Active status",
+     "type": "string",
+     "description": "Which ads to include. Choose active for ads running now, inactive for ended ads, all for both.",
+     "enum": [
+      "active",
+      "inactive",
+      "all"
+     ],
+     "enumTitles": [
+      "Active",
+      "Inactive",
+      "All"
+     ],
+     "default": "active",
+     "editor": "select"
+    },
+    "adType": {
+     "title": "Ad type",
+     "type": "string",
+     "description": "All ads is the commercial default. Political and issue ads add Meta's published spend and impression ranges.",
+     "enum": [
+      "all",
+      "political",
+      "housing",
+      "employment",
+      "credit"
+     ],
+     "enumTitles": [
+      "All ads (commercial)",
+      "Political and issue ads",
+      "Housing ads",
+      "Employment ads",
+      "Credit ads"
+     ],
+     "default": "all",
+     "editor": "select"
+    },
+    "mediaType": {
+     "title": "Media type",
+     "type": "string",
+     "enum": [
+      "all",
+      "image",
+      "video",
+      "meme",
+      "none"
+     ],
+     "enumTitles": [
+      "All",
+      "Images",
+      "Videos",
+      "Memes",
+      "Text only"
+     ],
+     "default": "all",
+     "description": "Filter by creative type. Choose all unless you need only one creative type.",
+     "editor": "select"
+    },
+    "dateFrom": {
+     "title": "Started on or after",
+     "type": "string",
+     "description": "YYYY-MM-DD. Only ads that started running on or after this date. Example: \"2026-01-01\".",
+     "editor": "textfield"
+    },
+    "dateTo": {
+     "title": "Started on or before",
+     "type": "string",
+     "description": "YYYY-MM-DD. Only ads that started running on or before this date. Example: \"2026-10-01\".",
+     "editor": "textfield"
+    },
+    "platforms": {
+     "title": "Platforms",
+     "type": "array",
+     "description": "Optional. Any of: facebook, instagram, audience_network, messenger, threads. Example: [\"facebook\",\"instagram\"].",
+     "editor": "stringList"
+    },
+    "languages": {
+     "title": "Ad languages",
+     "type": "array",
+     "description": "Optional language codes such as en, es. The library filters by these; they are echoed in the languages field. Example: [\"en\",\"es\"].",
+     "editor": "stringList"
+    },
+    "maxItems": {
+     "title": "Max ads",
+     "type": "integer",
+     "description": "Total ads to deliver across all targets. You are charged per ad.",
+     "default": 100,
+     "minimum": 1,
+     "maximum": 50000,
+     "editor": "number"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only ads not seen in earlier runs",
+     "type": "boolean",
+     "description": "Skip ads already delivered by a previous run (tracked by ad id). Skipped ads are not charged.",
+     "default": false,
+     "editor": "checkbox"
+    },
+    "stateStoreName": {
+     "title": "State store name",
+     "type": "string",
+     "description": "Named key-value store that remembers delivered ad ids when onlyNewSinceLastRun is on. Change it to keep separate watch lists. Example: \"shoe-brands-watch\".",
+     "default": "meta-ad-library-seen",
+     "editor": "textfield",
+     "sectionCaption": "Advanced"
+    },
+    "proxyConfiguration": {
+     "title": "Proxy",
+     "type": "object",
+     "description": "Apify Proxy. Residential is the default: Meta rate-limits datacenter IPs after the first page, so datacenter returns only the first ~30 ads.",
+     "default": {
+      "useApifyProxy": true,
+      "apifyProxyGroups": [
+       "RESIDENTIAL"
+      ],
+      "apifyProxyCountry": "US"
+     },
+     "editor": "proxy",
+     "prefill": {
+      "useApifyProxy": true,
+      "apifyProxyGroups": [
+       "RESIDENTIAL"
+      ],
+      "apifyProxyCountry": "US"
+     }
+    }
+   },
+   "required": [],
+   "description": "Collect ads from the public Meta Ad Library (Facebook, Instagram, Messenger, Audience Network). Input: at least one of searchTerms[], pageIds[] or libraryUrls[]; optional country (ISO code or ALL), activeStatus (active|inactive|all), adType, mediaType, dateFrom/dateTo (YYYY-MM-DD), maxItems. Output: one flat row per ad with advertiser, dates, platforms, text, headline, CTA, link, image/video URLs. Example input: {\"searchTerms\":[\"running shoes\"],\"country\":\"US\",\"activeStatus\":\"active\",\"maxItems\":100}. Charged per ad delivered."
+  }
+ }
+]

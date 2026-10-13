@@ -1,0 +1,229 @@
+{
+ "fmcsa-new-carrier-leads": {
+  "states": [],
+  "daysBack": 7,
+  "requireEmail": true,
+  "maxResults": 5,
+  "onlyNewSinceLastRun": false
+ },
+ "warn-layoff-alerts": {
+  "states": [
+   "TX"
+  ],
+  "daysBack": 365,
+  "maxResults": 5,
+  "onlyNewSinceLastRun": false
+ },
+ "website-tech-stack-detector": {
+  "urls": [
+   "shopify.com",
+   "wordpress.org",
+   "vercel.com"
+  ]
+ },
+ "ats-open-roles": {
+  "companies": [
+   "airbnb",
+   "https://jobs.lever.co/spotify",
+   "https://jobs.ashbyhq.com/ramp"
+  ],
+  "maxJobsPerCompany": 5,
+  "onlyNewSinceLastRun": false
+ },
+ "city-council-agendas": {
+  "clients": [
+   "denver"
+  ],
+  "maxResults": 5,
+  "onlyNewSinceLastRun": false
+ },
+ "company-enrichment-by-domain": {
+  "domains": [
+   "basecamp.com",
+   "plausible.io"
+  ],
+  "maxPagesPerDomain": 3,
+  "includeTechStack": true
+ },
+ "sec-form-d-funding-leads": {
+  "lookbackDays": 3,
+  "excludePooledFunds": true,
+  "maxResults": 5,
+  "onlyNewSinceLastRun": false
+ },
+ "technical-seo-page-audit": {
+  "urls": [
+   "https://example.com"
+  ],
+  "maxPages": 3,
+  "checkBrokenLinks": true,
+  "maxLinksToCheck": 15
+ },
+ "domain-intelligence-lookup": {
+  "domains": [
+   "example.com",
+   "apify.com",
+   "github.com"
+  ],
+  "maxDomains": 3,
+  "includeSubdomains": true,
+  "maxSubdomains": 50,
+  "checkSsl": true,
+  "checkHeaders": true
+ },
+ "new-business-filings": {
+  "states": [
+   "CO",
+   "NY",
+   "OR",
+   "CT"
+  ],
+  "daysBack": 7,
+  "maxItems": 5
+ },
+ "app-store-reviews": {
+  "appIds": [
+   "https://apps.apple.com/us/app/spotify-music-and-podcasts/id324684580"
+  ],
+  "countries": [
+   "us"
+  ],
+  "maxReviewsPerApp": 5,
+  "includeAppDetails": true
+ },
+ "website-contact-extractor": {
+  "startUrls": [
+   {
+    "url": "https://www.shinola.com"
+   },
+   {
+    "url": "https://buddyspizza.com"
+   }
+  ],
+  "maxPagesPerSite": 5,
+  "includeNamedEmails": true,
+  "sameDomainOnly": true
+ },
+ "shopify-store-leads": {
+  "domains": [
+   "allbirds.com",
+   "brooklinen.com"
+  ],
+  "keywords": [],
+  "maxStores": 5,
+  "includeProducts": false
+ },
+ "local-business-leads": {
+  "categories": [
+   "dentist"
+  ],
+  "locations": [
+   "Austin, TX"
+  ],
+  "maxItems": 5,
+  "requireWebsite": false,
+  "requirePhone": false,
+  "enrichFromWebsite": false
+ },
+ "workday-jobs-scraper": {
+  "companies": [
+   "NVIDIA",
+   "Salesforce"
+  ],
+  "searchText": "engineer",
+  "maxItemsPerCompany": 5
+ },
+ "company-news-monitor": {
+  "companies": [
+   "Nvidia",
+   "Stripe"
+  ],
+  "timespan": "24h",
+  "maxItems": 5
+ },
+ "building-permits-leads": {
+  "cities": [
+   "CHI",
+   "SEA",
+   "AUS"
+  ],
+  "recordTypes": [
+   "permit"
+  ],
+  "sinceDays": 7,
+  "minValuation": 0,
+  "maxItems": 5
+ },
+ "sitemap-link-inventory": {
+  "startUrls": [
+   "https://crawlee.dev"
+  ],
+  "maxUrlsPerSite": 10,
+  "checkMode": "sitemapUrls",
+  "maxLinksToCheck": 10
+ },
+ "developer-signals": {
+  "modes": [
+   "hnSearch",
+   "showHn",
+   "npmPackages",
+   "pypiPackages"
+  ],
+  "hnKeywords": [
+   "apify"
+  ],
+  "sinceDate": "90 days",
+  "maxItemsPerQuery": 3,
+  "npmPackages": [
+   "crawlee"
+  ],
+  "pypiPackages": [
+   "apify-client"
+  ]
+ },
+ "sanctions-screening": {
+  "names": [
+   "Rafael Caro-Quintero",
+   "Mohamed Ali",
+   "Acme Plumbing Supplies LLC"
+  ],
+  "lists": [
+   "ofac_sdn",
+   "un"
+  ],
+  "minScore": 88,
+  "maxMatchesPerName": 3
+ },
+ "federal-grants-contracts": {
+  "keywords": [
+   "cybersecurity"
+  ],
+  "mode": "both",
+  "maxItems": 5,
+  "awardKinds": [
+   "contracts"
+  ],
+  "awardsLookbackDays": 365,
+  "minAwardAmount": 1000000
+ },
+ "amazon-product-search": {
+  "keywords": [
+   "usb c cable"
+  ],
+  "marketplace": "US",
+  "maxItems": 3,
+  "maxPages": 1
+ },
+ "linkedin-public-jobs": {
+  "keywords": "data analyst",
+  "location": "Chicago, IL",
+  "maxItems": 3
+ },
+ "meta-ad-library": {
+  "searchTerms": [
+   "running shoes"
+  ],
+  "country": "US",
+  "maxItems": 3
+ }
+}
