@@ -225,5 +225,47 @@
   ],
   "country": "US",
   "maxItems": 3
+ },
+ "google-maps-places-scraper": {
+  "searchStringsArray": [
+   "coffee shop"
+  ],
+  "locationQuery": "Detroit, MI",
+  "maxCrawledPlacesPerSearch": 3
+ },
+ "tiktok-public-profile-scraper": {
+  "profiles": [
+   "natgeo"
+  ],
+  "resultsPerPage": 3,
+  "resultsType": "posts",
+  "maxItems": 3
+ },
+ "youtube-comments-scraper": {
+  "startUrls": [
+   {
+    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+   }
+  ],
+  "maxComments": 5,
+  "sortBy": "TOP",
+  "includeReplies": false
+ },
+ "amazon-bestsellers": {
+  "categories": [
+   "electronics"
+  ],
+  "listTypes": [
+   "bestsellers"
+  ],
+  "countryCode": "US",
+  "maxItemsPerCategory": 5
+ },
+ "sam-gov-opportunities": {
+  "keywords": [
+   "software"
+  ],
+  "postedWithinDays": 7,
+  "maxResults": 3
  }
 }

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "open-data-actors-tools"
 version = "0.1.0"
-description = "LangChain, LlamaIndex and CrewAI tools for 24 public open-data Apify actors (sanctions, SEC Form D, FMCSA, permits, jobs, domains and more)."
+description = "LangChain, LlamaIndex and CrewAI tools for 29 public open-data Apify actors (sanctions, SEC Form D, FMCSA, permits, jobs, domains and more)."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

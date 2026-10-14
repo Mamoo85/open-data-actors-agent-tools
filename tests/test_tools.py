@@ -47,10 +47,10 @@ def fake(monkeypatch):
     return client
 
 
-def test_registry_has_24_unique_tools():
+def test_registry_has_29_unique_tools():
     tools = list_tools()
-    assert len(tools) == 24
-    assert len({t.tool_name for t in tools}) == 24
+    assert len(tools) == 29
+    assert len({t.tool_name for t in tools}) == 29
     for t in tools:
         assert t.description and t.input_model is not None
         assert t.actor_id == f"transparent_meteorite/{t.slug}"
@@ -132,7 +132,7 @@ def test_langchain_tools(fake):
     from open_data_actors.langchain import get_langchain_tools
 
     tools = get_langchain_tools()
-    assert len(tools) == 24
+    assert len(tools) == 29
     names = {t.name for t in tools}
     assert names == {t.tool_name for t in list_tools()}
     tool = next(t for t in tools if t.name == "sanctions_screening")
@@ -146,7 +146,7 @@ def test_llamaindex_tools(fake):
     from open_data_actors.llamaindex import get_llamaindex_tools
 
     tools = get_llamaindex_tools()
-    assert len(tools) == 24
+    assert len(tools) == 29
     tool = next(t for t in tools if t.metadata.name == "domain_intelligence_lookup")
     out = tool.call(domains=["example.com"], max_items=2)
     assert len(json.loads(out.content)) == 2
@@ -157,7 +157,7 @@ def test_crewai_tools(fake):
     from open_data_actors.crewai import get_crewai_tools
 
     tools = get_crewai_tools()
-    assert len(tools) == 24
+    assert len(tools) == 29
     tool = next(t for t in tools if t.name == "sanctions_screening")
     assert len(json.loads(tool.run(names=["Acme"], max_items=2))) == 2
 
@@ -184,7 +184,7 @@ def test_crewai_adapter_with_stub(monkeypatch, fake):
     from open_data_actors.crewai import get_crewai_tools
 
     tools = get_crewai_tools()
-    assert len(tools) == 24
+    assert len(tools) == 29
     tool = next(t for t in tools if t.name == "domain_intelligence_lookup")
     assert issubclass(type(tool), BaseTool)
     assert len(json.loads(tool.run(domains=["example.com"], max_items=2))) == 2

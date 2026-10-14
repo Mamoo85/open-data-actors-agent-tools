@@ -1,6 +1,6 @@
 # open-data-actors-agent-tools
 
-Agent tools (LangChain, LlamaIndex, CrewAI) for 24 public open-data actors on Apify: sanctions screening, SEC Form D funding leads, FMCSA new carriers, building permits, new business filings, ATS and Workday jobs, domain intelligence, technical SEO audits and more. Each tool runs one actor and returns JSON rows.
+Agent tools (LangChain, LlamaIndex, CrewAI) for 29 public open-data actors on Apify: sanctions screening, SEC Form D funding leads, FMCSA new carriers, building permits, new business filings, ATS and Workday jobs, domain intelligence, technical SEO audits and more. Each tool runs one actor and returns JSON rows.
 
 ## Disclosure
 
@@ -86,6 +86,11 @@ See `examples/` for runnable scripts. Inputs are validated with pydantic against
 | `amazon_product_search` | Amazon Product Search: prices, ratings, ASINs | [actor](https://apify.com/transparent_meteorite/amazon-product-search) |
 | `linkedin_public_jobs` | LinkedIn Public Jobs Scraper (no login) | Salary & Level | [actor](https://apify.com/transparent_meteorite/linkedin-public-jobs) |
 | `meta_ad_library` | Meta Ad Library Scraper: Facebook & Instagram Ads | [actor](https://apify.com/transparent_meteorite/meta-ad-library) |
+| `google_maps_places_scraper` | Google Maps Scraper: Places, Phones, Emails, Reviews | [actor](https://apify.com/transparent_meteorite/google-maps-places-scraper) |
+| `tiktok_public_profile_scraper` | TikTok Profile Scraper: Followers, Posts, Bio Email, $2.5/1K | [actor](https://apify.com/transparent_meteorite/tiktok-public-profile-scraper) |
+| `youtube_comments_scraper` | YouTube Comments Scraper: Comments + Replies, $1/1K | [actor](https://apify.com/transparent_meteorite/youtube-comments-scraper) |
+| `amazon_bestsellers` | Amazon Best Sellers Scraper: Ranks, 21 Countries, $1.9/1K | [actor](https://apify.com/transparent_meteorite/amazon-bestsellers) |
+| `sam_gov_opportunities` | SAM.gov Contract Opportunities: Federal Bids & RFPs | [actor](https://apify.com/transparent_meteorite/sam-gov-opportunities) |
 
 ## Testing, honestly
 

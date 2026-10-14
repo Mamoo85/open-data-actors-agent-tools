@@ -3289,5 +3289,1116 @@
    "required": [],
    "description": "Collect ads from the public Meta Ad Library (Facebook, Instagram, Messenger, Audience Network). Input: at least one of searchTerms[], pageIds[] or libraryUrls[]; optional country (ISO code or ALL), activeStatus (active|inactive|all), adType, mediaType, dateFrom/dateTo (YYYY-MM-DD), maxItems. Output: one flat row per ad with advertiser, dates, platforms, text, headline, CTA, link, image/video URLs. Example input: {\"searchTerms\":[\"running shoes\"],\"country\":\"US\",\"activeStatus\":\"active\",\"maxItems\":100}. Charged per ad delivered."
   }
+ },
+ {
+  "slug": "google-maps-places-scraper",
+  "title": "Google Maps Scraper: Places, Phones, Emails, Reviews",
+  "description": "Scrape Google Maps places by keyword and location: name, address, phone, website, rating, review count, hours, categories, coordinates, place URL. Optional website emails and socials, up to 5 reviews. No login. $1.50 per 1,000 places.",
+  "seo": "Google Maps Scraper: Places, Phones, Emails $1.50/1K",
+  "example": {
+   "body": "{\"searchStringsArray\": [\"coffee shop\"], \"locationQuery\": \"Detroit, MI\", \"maxCrawledPlacesPerSearch\": 20}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Google Maps Places Scraper input",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "searchStringsArray": {
+     "title": "Search terms",
+     "type": "array",
+     "editor": "stringList",
+     "description": "What to search for, like you would type it into Google Maps: \"dentist\", \"coffee shop\", \"roofing contractor\". Each term is searched in every location below. Leave empty with no URLs to run a small demo search.",
+     "prefill": [
+      "coffee shop"
+     ],
+     "sectionCaption": "What and where"
+    },
+    "locationQuery": {
+     "title": "Location",
+     "type": "string",
+     "editor": "textfield",
+     "description": "City, county, state, ZIP or address, for example \"Austin, TX\" or \"Manchester, UK\". Added to each search as \"<term> in <location>\". Leave empty if your search terms already contain a place.",
+     "prefill": "Detroit, MI"
+    },
+    "locations": {
+     "title": "More locations",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Extra cities or neighborhoods to cover. Each one runs every search term again (Google returns up to 120 places per search, so split big cities into neighborhoods or ZIP codes to get more)."
+    },
+    "postalCodes": {
+     "title": "ZIP / postal codes",
+     "type": "array",
+     "editor": "stringList",
+     "description": "ZIP or postal codes to search, one per line. Works like extra locations."
+    },
+    "city": {
+     "title": "City",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional. Structured location, same as the market leader: city, county, state and postal code are joined into one area (for example \"Austin, TX\"). Leave empty to use the fields above."
+    },
+    "county": {
+     "title": "County",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional. Joined with city/state/postal code into one location."
+    },
+    "state": {
+     "title": "State or region",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional. For example \"TX\" or \"Ontario\"."
+    },
+    "postalCode": {
+     "title": "Postal code",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional. One postal code, joined with the fields above. For many ZIP codes use \"ZIP / postal codes\" instead (each becomes its own search)."
+    },
+    "maxCrawledPlacesPerSearch": {
+     "title": "Max places per search",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 120,
+     "default": 20,
+     "prefill": 20,
+     "description": "How many places to take from each search (term x location). Google Maps shows at most 120 results per search."
+    },
+    "maxCrawledPlaces": {
+     "title": "Max places in total",
+     "type": "integer",
+     "minimum": 0,
+     "default": 0,
+     "description": "Stop the whole run after this many places. 0 = no overall limit (the per-search limit and your max charge still apply)."
+    },
+    "startUrls": {
+     "title": "Google Maps URLs",
+     "type": "array",
+     "editor": "requestListSources",
+     "description": "Paste Google Maps search URLs (https://www.google.com/maps/search/...) or place URLs (https://www.google.com/maps/place/... or ?cid=...).",
+     "sectionCaption": "URLs and place IDs"
+    },
+    "placeIds": {
+     "title": "Place IDs",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Google place IDs (ChIJ...) to look up directly, for example to refresh a list you already have."
+    },
+    "skipPlaces": {
+     "title": "Skip these places (never delivered, never charged)",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Place IDs (ChIJ...), CIDs or Google Maps URLs you already have. They are dropped before delivery, so you are not charged for them."
+    },
+    "language": {
+     "title": "Language",
+     "type": "string",
+     "editor": "textfield",
+     "default": "en",
+     "description": "Language code for names, categories and hours, for example en, de, es, fr.",
+     "sectionCaption": "Language and filters"
+    },
+    "countryCode": {
+     "title": "Country",
+     "type": "string",
+     "editor": "textfield",
+     "default": "us",
+     "description": "Two-letter country code that biases results, for example us, gb, ca, au, de."
+    },
+    "categoryFilterWords": {
+     "title": "Only these categories",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Keep only places whose category contains one of these words, for example \"dentist\" drops the dental lab and the pharmacy next door."
+    },
+    "searchMatching": {
+     "title": "Name must match search",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "all",
+      "only_includes",
+      "only_exact"
+     ],
+     "enumTitles": [
+      "Any place Google returns",
+      "Name contains the search term",
+      "Name equals the search term"
+     ],
+     "default": "all",
+     "description": "Use this when you search for a brand name and want to drop unrelated nearby places."
+    },
+    "placeMinimumStars": {
+     "title": "Minimum rating",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "two",
+      "twoAndHalf",
+      "three",
+      "threeAndHalf",
+      "four",
+      "fourAndHalf"
+     ],
+     "enumTitles": [
+      "2+",
+      "2.5+",
+      "3+",
+      "3.5+",
+      "4+",
+      "4.5+"
+     ],
+     "description": "Skip places rated below this. Leave empty for any rating."
+    },
+    "minReviews": {
+     "title": "Minimum review count",
+     "type": "integer",
+     "minimum": 0,
+     "default": 0,
+     "description": "Skip places with fewer reviews than this."
+    },
+    "website": {
+     "title": "Website",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "allPlaces",
+      "withWebsite",
+      "withoutWebsite"
+     ],
+     "enumTitles": [
+      "All places",
+      "Only places with a website",
+      "Only places WITHOUT a website"
+     ],
+     "default": "allPlaces",
+     "description": "\"Without a website\" is the classic web-design lead list."
+    },
+    "onlyWithPhone": {
+     "title": "Only places with a phone number",
+     "type": "boolean",
+     "default": false,
+     "description": "Skip places that list no phone number."
+    },
+    "skipClosed": {
+     "title": "Skip closed places",
+     "type": "boolean",
+     "default": true,
+     "description": "Skip places Google marks as closed (permanently or temporarily). On by default. Closed places carry permanentlyClosed / temporarilyClosed flags when you turn this off."
+    },
+    "skipClosedPlaces": {
+     "title": "Skip closed places (old name)",
+     "type": "boolean",
+     "description": "Old name of skipClosed, still accepted. skipClosed wins when both are set."
+    },
+    "scrapeContacts": {
+     "title": "Find emails and social profiles on the website",
+     "type": "boolean",
+     "default": false,
+     "description": "Visits each place's own website (home page plus up to 2 contact/about pages) and adds emails, extra phones and Facebook, Instagram, LinkedIn, X, YouTube, TikTok, Pinterest and Yelp links. Charged per place only when at least one email or social profile is found.",
+     "sectionCaption": "Extra data (optional, paid only when found)"
+    },
+    "maxReviews": {
+     "title": "Reviews per place (0-5)",
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 5,
+     "default": 0,
+     "description": "Adds up to 5 of the most relevant reviews per place (stars, text, reviewer, date). Google shows 5 on the public place page without login; this actor does not go past that. Charged per review delivered."
+    },
+    "scrapePlaceDetailPage": {
+     "title": "Open each place page",
+     "type": "boolean",
+     "default": true,
+     "description": "Opens each place page to add the star histogram (reviewsDistribution), the place description and the full attribute list (accessibility, payments, service options). On by default; turn off for faster, search-only rows. No extra charge."
+    },
+    "maxImages": {
+     "title": "Image URLs per place",
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 100,
+     "default": 0,
+     "description": "0 = off. Adds imageUrls (full-size photo links Google ships with the place; usually 1-10 from search, more with the detail page). Free; no extra event."
+    },
+    "scrapeOrderOnline": {
+     "title": "Order-online links (restaurants)",
+     "type": "boolean",
+     "default": false,
+     "description": "Adds orderBy: the \"Order online\" links Google shows for restaurants and cafes. Free; no extra event."
+    },
+    "reviewsSort": {
+     "title": "Review order",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "mostRelevant",
+      "newest",
+      "highestRanking",
+      "lowestRanking"
+     ],
+     "enumTitles": [
+      "Most relevant",
+      "Newest",
+      "Highest rating",
+      "Lowest rating"
+     ],
+     "default": "mostRelevant",
+     "description": "Order of the reviews returned with each place (applied to the reviews Google embeds in the place page)."
+    },
+    "reviewsStartDate": {
+     "title": "Only reviews newer than",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional. Drops reviews published before this date (YYYY-MM-DD). Dropped reviews are not charged.",
+     "pattern": "^(\\d{4}-\\d{2}-\\d{2})?$"
+    },
+    "reviewsFilterString": {
+     "title": "Only reviews containing",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional keyword. Keeps only reviews whose text contains it (case-insensitive). Dropped reviews are not charged."
+    },
+    "onlyNew": {
+     "title": "Only new places (monitor mode)",
+     "type": "boolean",
+     "default": false,
+     "description": "Remembers which places earlier runs already returned (same searches, or the same monitor key) and returns and charges only places that are new. Schedule it daily or weekly to catch newly opened businesses.",
+     "sectionCaption": "Monitoring"
+    },
+    "monitorKey": {
+     "title": "Monitor key",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional name for the remembered list, so different schedules with the same searches keep separate lists."
+    },
+    "proxyConfiguration": {
+     "title": "Proxy",
+     "type": "object",
+     "editor": "proxy",
+     "default": {
+      "useApifyProxy": true
+     },
+     "prefill": {
+      "useApifyProxy": true
+     },
+     "description": "Apify Proxy is on by default. If Google rate limits an exit, the actor rotates sessions and moves to residential proxy automatically.",
+     "sectionCaption": "Proxy"
+    }
+   },
+   "required": []
+  }
+ },
+ {
+  "slug": "tiktok-public-profile-scraper",
+  "title": "TikTok Profile Scraper: Followers, Posts, Bio Email, $2.5/1K",
+  "description": "TikTok public profiles and latest posts: followers, likes, video count, bio, bio link, emails and links in bio, verified, business category, plus each recent video's plays, likes, comments, shares, saves, hashtags, music and engagement rate. Video URLs too. No login.",
+  "seo": "TikTok Profile Scraper - Followers, Posts, Bio, Emails",
+  "example": {
+   "body": "{\"profiles\": [\"natgeo\", \"nba\"], \"resultsPerPage\": 10, \"resultsType\": \"posts\", \"includeVideoDetails\": true}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "TikTok Profile Scraper input",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "profiles": {
+     "title": "Profiles (usernames or profile URLs)",
+     "type": "array",
+     "editor": "stringList",
+     "description": "TikTok usernames (with or without @) or profile URLs like https://www.tiktok.com/@natgeo. Video URLs pasted here work too.",
+     "prefill": [
+      "natgeo",
+      "nba"
+     ],
+     "default": [
+      "natgeo"
+     ]
+    },
+    "postURLs": {
+     "title": "Video URLs",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Individual TikTok video or photo post URLs (vm.tiktok.com short links too). Each returns one post row with full stats and author data."
+    },
+    "resultsType": {
+     "title": "Output",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "posts",
+      "profiles",
+      "both"
+     ],
+     "enumTitles": [
+      "Posts (one row per video, author data included)",
+      "Profiles (one row per profile, latest posts summarised)",
+      "Both"
+     ],
+     "default": "posts",
+     "description": "What each dataset row is. Profile rows add average and median views, engagement rate and posting frequency of the latest posts."
+    },
+    "resultsPerPage": {
+     "title": "Latest posts per profile",
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 30,
+     "default": 10,
+     "prefill": 10,
+     "description": "How many of the newest posts to read per profile. TikTok's public (logged-out) view shows about the latest 10-13 posts, so that is the practical ceiling. 0 = profile data only."
+    },
+    "includeVideoDetails": {
+     "title": "Full post stats (likes, comments, shares, saves, date, music, hashtags)",
+     "type": "boolean",
+     "default": true,
+     "description": "Opens each post's public page for the complete stats. Off = faster, only caption, views and cover."
+    },
+    "oldestPostDate": {
+     "title": "Only posts newer than",
+     "type": "string",
+     "editor": "textfield",
+     "description": "A date (2026-10-01) or a period (7 days, 2 weeks, 3 months). Older posts are skipped and not charged."
+    },
+    "newestPostDate": {
+     "title": "Posts up to (newest date)",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Optional. Drops posts published after this date (\"2026-09-30\", or relative like \"7 days\"). Combine with the oldest date for an exact from-to window. Dropped posts are not charged."
+    },
+    "minPlayCount": {
+     "title": "Minimum views",
+     "type": "integer",
+     "minimum": 0,
+     "description": "Skip posts with fewer views (not charged)."
+    },
+    "leastDiggs": {
+     "title": "Minimum likes",
+     "type": "integer",
+     "minimum": 0,
+     "description": "Optional. Only posts with at least this many likes. Works together with the date and play filters."
+    },
+    "mostDiggs": {
+     "title": "Maximum likes",
+     "type": "integer",
+     "minimum": 0,
+     "description": "Optional. Only posts with at most this many likes (find small, rising posts)."
+    },
+    "profileSorting": {
+     "title": "Sort posts",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "latest",
+      "popular",
+      "oldest"
+     ],
+     "enumTitles": [
+      "Latest first",
+      "Most played first",
+      "Oldest first"
+     ],
+     "default": "latest",
+     "description": "Order of the post rows for each profile."
+    },
+    "excludePinnedPosts": {
+     "title": "Skip pinned posts",
+     "type": "boolean",
+     "default": false,
+     "description": "Pinned posts are usually old. Needs full post stats on."
+    },
+    "maxItems": {
+     "title": "Max rows",
+     "type": "integer",
+     "minimum": 1,
+     "default": 1000,
+     "description": "Hard cap on rows (and cost) for the whole run."
+    },
+    "monitorMode": {
+     "title": "Monitor mode: only new posts",
+     "type": "boolean",
+     "default": false,
+     "description": "Remembers posts already delivered (named key-value store) and returns only new ones next run; profile rows get follower change since the last run. Already-seen posts are not charged. Schedule it daily."
+    },
+    "monitorStoreName": {
+     "title": "Monitor store name",
+     "type": "string",
+     "editor": "textfield",
+     "default": "tiktok-profile-monitor",
+     "description": "Use a different name per watch list."
+    },
+    "proxyConfiguration": {
+     "title": "Proxy",
+     "type": "object",
+     "editor": "proxy",
+     "default": {
+      "useApifyProxy": true
+     },
+     "prefill": {
+      "useApifyProxy": true
+     },
+     "description": "Apify Proxy (default) works. The actor switches to residential IPs by itself after repeated blocks."
+    }
+   },
+   "required": []
+  }
+ },
+ {
+  "slug": "youtube-comments-scraper",
+  "title": "YouTube Comments Scraper: Comments + Replies, $1/1K",
+  "description": "Scrape public YouTube comments and replies from videos, Shorts, channels, playlists or searches: text, author, likes, reply count, creator heart, pinned, date. Top or newest, keyword/likes/date filters, monitor mode. No login.",
+  "seo": "YouTube Comments Scraper - Comments & Replies, $1/1K",
+  "example": {
+   "body": "{\"startUrls\": [{\"url\": \"https://www.youtube.com/watch?v=dQw4w9WgXcQ\"}], \"maxComments\": 100, \"sortBy\": \"TOP\", \"includeReplies\": false}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "YouTube Comments Scraper",
+   "type": "object",
+   "schemaVersion": 1,
+   "description": "Paste YouTube video, Shorts, channel, playlist or search URLs (or type search words). Output: one row per public comment with text, author, likes, reply count, creator heart, pinned flag and date, plus replies if you want them. Empty input = 100 top comments of an example video.",
+   "properties": {
+    "startUrls": {
+     "title": "YouTube URLs",
+     "type": "array",
+     "editor": "requestListSources",
+     "prefill": [
+      {
+       "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      }
+     ],
+     "description": "Video (watch, youtu.be, Shorts, live), channel (@handle, /channel/UC..., /c/...), playlist or search-results URLs. Channels, playlists and searches are expanded to their videos (see 'Videos per channel / playlist / search').",
+     "sectionCaption": "What to scrape",
+     "sectionDescription": "Any mix of video, Shorts, channel, playlist and search URLs, or plain search words."
+    },
+    "videoIds": {
+     "title": "Video IDs",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Optional: bare 11-character video IDs, e.g. dQw4w9WgXcQ."
+    },
+    "searchQueries": {
+     "title": "Search words",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Optional: YouTube searches, e.g. \"iphone 17 review\". The top videos of each search are scraped."
+    },
+    "maxVideosPerSource": {
+     "title": "Videos per channel / playlist / search",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 5000,
+     "default": 10,
+     "description": "How many videos to take from each channel, playlist or search (newest first for channels)."
+    },
+    "channelTab": {
+     "title": "Channel tab",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "videos",
+      "shorts",
+      "streams"
+     ],
+     "enumTitles": [
+      "Videos",
+      "Shorts",
+      "Live streams"
+     ],
+     "default": "videos",
+     "description": "Which tab of a channel URL to read videos from."
+    },
+    "maxComments": {
+     "title": "Max comments per video",
+     "type": "integer",
+     "minimum": 0,
+     "default": 100,
+     "description": "Top-level comments per video (replies are extra). 0 = all comments.",
+     "sectionCaption": "Comments"
+    },
+    "sortBy": {
+     "title": "Sort comments by",
+     "type": "string",
+     "editor": "select",
+     "enum": [
+      "TOP",
+      "NEWEST"
+     ],
+     "enumTitles": [
+      "Top comments",
+      "Newest first"
+     ],
+     "default": "TOP",
+     "description": "Top comments (YouTube's ranking) or newest first."
+    },
+    "includeReplies": {
+     "title": "Include replies",
+     "type": "boolean",
+     "default": false,
+     "description": "Also scrape the replies under each comment (each reply is its own row with parentCommentId)."
+    },
+    "maxRepliesPerComment": {
+     "title": "Max replies per comment",
+     "type": "integer",
+     "minimum": 0,
+     "default": 20,
+     "description": "Only with 'Include replies'. 0 = all replies."
+    },
+    "maxItems": {
+     "title": "Max rows in total",
+     "type": "integer",
+     "minimum": 0,
+     "default": 0,
+     "description": "Hard cap on rows (comments + replies) for the whole run, to control cost. 0 = no cap."
+    },
+    "newerThan": {
+     "title": "Only comments newer than",
+     "type": "string",
+     "editor": "textfield",
+     "description": "Relative (\"7 days\", \"2 months\") or a date (2026-01-31). YouTube shows comment age as \"3 days ago\", so the cut is approximate. With 'Newest first' the scraper stops paging at the first older comment.",
+     "sectionCaption": "Filters (filtered rows are free)"
+    },
+    "keywords": {
+     "title": "Only comments containing",
+     "type": "array",
+     "editor": "stringList",
+     "description": "Keep comments that contain any of these words (case-insensitive)."
+    },
+    "minLikes": {
+     "title": "Minimum likes",
+     "type": "integer",
+     "minimum": 0,
+     "default": 0,
+     "description": "Keep only comments with at least this many likes."
+    },
+    "monitorMode": {
+     "title": "Monitor mode: only new comments",
+     "type": "boolean",
+     "default": false,
+     "description": "Remember comment IDs between runs (named key-value store) and output only comments not seen before. Schedule the actor daily to get new comments only; seen comments are free.",
+     "sectionCaption": "Monitoring"
+    },
+    "monitorStoreName": {
+     "title": "Monitor store name",
+     "type": "string",
+     "editor": "textfield",
+     "default": "youtube-comments-monitor",
+     "description": "Use a different name per project to keep separate memories."
+    },
+    "language": {
+     "title": "Interface language",
+     "type": "string",
+     "editor": "textfield",
+     "default": "en",
+     "description": "YouTube interface language (hl), affects '3 days ago' texts. Keep 'en' for parsed dates.",
+     "sectionCaption": "Advanced"
+    },
+    "country": {
+     "title": "Country",
+     "type": "string",
+     "editor": "textfield",
+     "default": "US",
+     "description": "Two-letter country (gl) for search results."
+    },
+    "videoConcurrency": {
+     "title": "Videos in parallel",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 5,
+     "default": 3,
+     "description": "How many videos are read at the same time."
+    },
+    "proxyConfiguration": {
+     "title": "Proxy",
+     "type": "object",
+     "editor": "proxy",
+     "prefill": {
+      "useApifyProxy": false
+     },
+     "description": "Not needed normally: requests go direct. Pick a proxy only if your runs get blocked."
+    },
+    "autoProxyFallback": {
+     "title": "Switch to residential proxy when blocked",
+     "type": "boolean",
+     "default": true,
+     "description": "If YouTube refuses a request twice, retry it through Apify residential proxy (only when your plan includes it)."
+    }
+   }
+  }
+ },
+ {
+  "slug": "amazon-bestsellers",
+  "title": "Amazon Best Sellers Scraper: Ranks, 21 Countries, $1.9/1K",
+  "description": "Amazon Best Sellers, New Releases, Movers & Shakers, Most Wished For and Gift Ideas ranks in 21 countries: rank, ASIN, title, price, rating, reviews, images, category path. Subcategory crawl, rank-change monitor, optional product details.",
+  "seo": "Amazon Best Sellers Scraper - Top 100 Ranks, 21 Countries",
+  "example": {
+   "body": "{\"categories\": [\"electronics\"], \"listTypes\": [\"bestsellers\"], \"countryCode\": \"US\", \"maxItemsPerCategory\": 100}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "Amazon Best Sellers Scraper",
+   "type": "object",
+   "schemaVersion": 1,
+   "description": "Pick a country, list type(s) and categories (or paste list URLs). Output: one row per ranked product with rank, ASIN, title, price, rating, reviews, images and category path. Empty input = top 100 US Best Sellers in Electronics.",
+   "properties": {
+    "categories": {
+     "title": "Categories",
+     "type": "array",
+     "editor": "stringList",
+     "prefill": [
+      "electronics"
+     ],
+     "description": "Department names or slugs as Amazon shows them in the country you pick, e.g. \"electronics\", \"Toys & Games\", \"kitchen\", \"K\u00fcche, Haushalt & Wohnen\". Each is matched against the country's department list; an unknown name lists the valid ones in the log. Leave empty and add no URLs for Electronics.",
+     "sectionCaption": "What to scrape",
+     "sectionDescription": "Categories by name, or any Amazon list URL (any of the 5 list types, any subcategory). Mix freely."
+    },
+    "startUrls": {
+     "title": "List URLs",
+     "type": "array",
+     "editor": "requestListSources",
+     "description": "Any Amazon Best Sellers / New Releases / Movers & Shakers / Most Wished For / Gift Ideas URL, including subcategories, e.g. https://www.amazon.com/Best-Sellers-Electronics-Camera-Photo-Products/zgbs/electronics/502394/ or https://www.amazon.de/gp/new-releases/kitchen/. The country and list type are read from the URL. A root URL such as https://www.amazon.com/gp/bestsellers/ expands into every department."
+    },
+    "listTypes": {
+     "title": "List types",
+     "type": "array",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "bestsellers",
+       "new-releases",
+       "movers-and-shakers",
+       "most-wished-for",
+       "most-gifted"
+      ],
+      "enumTitles": [
+       "Best Sellers",
+       "New Releases",
+       "Movers & Shakers (biggest 24h rank gains)",
+       "Most Wished For",
+       "Gift Ideas (most gifted)"
+      ]
+     },
+     "default": [
+      "bestsellers"
+     ],
+     "prefill": [
+      "bestsellers"
+     ],
+     "description": "Which Amazon lists to read for each category above (URLs carry their own type). Movers & Shakers, Most Wished For and Gift Ideas are often empty on Amazon; an empty list is reported in the log and costs nothing."
+    },
+    "countryCode": {
+     "title": "Country",
+     "type": "string",
+     "enum": [
+      "US",
+      "UK",
+      "DE",
+      "FR",
+      "IT",
+      "ES",
+      "NL",
+      "BE",
+      "SE",
+      "PL",
+      "TR",
+      "CA",
+      "MX",
+      "BR",
+      "JP",
+      "IN",
+      "AU",
+      "SG",
+      "AE",
+      "SA",
+      "EG"
+     ],
+     "enumTitles": [
+      "United States (amazon.com)",
+      "United Kingdom (amazon.co.uk)",
+      "Germany (amazon.de)",
+      "France (amazon.fr)",
+      "Italy (amazon.it)",
+      "Spain (amazon.es)",
+      "Netherlands (amazon.nl)",
+      "Belgium (amazon.com.be)",
+      "Sweden (amazon.se)",
+      "Poland (amazon.pl)",
+      "Turkey (amazon.com.tr)",
+      "Canada (amazon.ca)",
+      "Mexico (amazon.com.mx)",
+      "Brazil (amazon.com.br)",
+      "Japan (amazon.co.jp)",
+      "India (amazon.in)",
+      "Australia (amazon.com.au)",
+      "Singapore (amazon.sg)",
+      "United Arab Emirates (amazon.ae)",
+      "Saudi Arabia (amazon.sa)",
+      "Egypt (amazon.eg)"
+     ],
+     "default": "US",
+     "description": "Amazon site for the categories above. Prices are requested in the site's own currency."
+    },
+    "language": {
+     "title": "Language",
+     "type": "string",
+     "enum": [
+      "local",
+      "en"
+     ],
+     "enumTitles": [
+      "Site language (what local shoppers see)",
+      "English where Amazon offers it (DE, FR, IT, ES, NL, BE, SE, JP, SA, EG)"
+     ],
+     "default": "local",
+     "description": "Language of titles and category names. English uses Amazon's own /-/en/ pages; sites without an English version stay in their language."
+    },
+    "maxItemsPerCategory": {
+     "title": "Ranks per list",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 100,
+     "default": 100,
+     "sectionCaption": "How much",
+     "description": "Top N ranks per list (Amazon publishes 100: ranks 1-50 on page 1 and 51-100 on page 2). 30 or less needs one request per list."
+    },
+    "maxItems": {
+     "title": "Max rows (whole run)",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 100000,
+     "default": 100,
+     "description": "Hard stop for the whole run. You pay per row delivered, so this is also your cost cap."
+    },
+    "depth": {
+     "title": "Subcategory depth",
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 5,
+     "default": 0,
+     "description": "0 = only the categories you gave. 1 = also every direct subcategory (e.g. Electronics -> Headphones, Cell Phones, ...). 2 = their subcategories too, and so on."
+    },
+    "maxCategories": {
+     "title": "Max lists",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 5000,
+     "default": 50,
+     "description": "Upper bound on lists read in one run (each category x list type x subcategory is one list). Protects deep crawls from running away."
+    },
+    "minRating": {
+     "title": "Min stars",
+     "type": "number",
+     "minimum": 0,
+     "maximum": 5,
+     "sectionCaption": "Filters (optional)",
+     "sectionDescription": "Rows that fail a filter are dropped and not charged.",
+     "description": "Keep only products rated at least this many stars, e.g. 4.5."
+    },
+    "maxPrice": {
+     "title": "Max price",
+     "type": "number",
+     "minimum": 0,
+     "description": "Keep only products at or below this price (site currency). Rows without a price are dropped when this is set."
+    },
+    "minReviews": {
+     "title": "Min reviews",
+     "type": "integer",
+     "minimum": 0,
+     "description": "Keep only products with at least this many ratings."
+    },
+    "scrapeProductDetails": {
+     "title": "Add product details",
+     "type": "boolean",
+     "default": false,
+     "sectionCaption": "Extras",
+     "description": "Also open each product page: brand, feature bullets, availability, seller, all images, breadcrumbs, best-sellers ranks, bought-in-past-month, model, dimensions, weight, description. One extra request per row; same price per row."
+    },
+    "detailConcurrency": {
+     "title": "Detail pages in parallel",
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 10,
+     "default": 5,
+     "description": "Only used with product details."
+    },
+    "monitorMode": {
+     "title": "Monitor mode (only changes)",
+     "type": "boolean",
+     "default": false,
+     "description": "Remember each list's ranks between runs and output only products that are new to the list or moved rank (with rankLastRun and rankChange). Unchanged products are not output and not charged. Schedule it daily for a cheap rank tracker. The first run outputs everything."
+    },
+    "monitorStoreName": {
+     "title": "Monitor store name",
+     "type": "string",
+     "default": "amazon-bestsellers-monitor",
+     "editor": "textfield",
+     "description": "Named key-value store that holds the last ranks. Use a different name per tracker."
+    },
+    "proxyConfiguration": {
+     "title": "Proxy",
+     "type": "object",
+     "editor": "proxy",
+     "default": {
+      "useApifyProxy": true
+     },
+     "prefill": {
+      "useApifyProxy": true
+     },
+     "sectionCaption": "Network",
+     "description": "Apify datacenter proxy by default (fast and cheap). Each blocked page is retried on a new IP."
+    },
+    "autoProxyFallback": {
+     "title": "Switch to residential proxy if blocked",
+     "type": "boolean",
+     "default": true,
+     "description": "If a country keeps blocking the proxy above, switch that country to Apify residential proxy for the rest of the run."
+    }
+   }
+  }
+ },
+ {
+  "slug": "sam-gov-opportunities",
+  "title": "SAM.gov Contract Opportunities: Federal Bids & RFPs",
+  "description": "Get open federal contracts and government bids from SAM.gov: solicitations, RFPs, RFQs, sources sought and award notices with contracting officer email and phone, NAICS, PSC, set-aside, deadlines, full text and attachments. No API key needed; daily new-only monitor mode.",
+  "seo": "SAM.gov Scraper: Federal Contract Opportunities API",
+  "example": {
+   "body": "{\"keywords\": [\"software\"], \"postedWithinDays\": 7, \"maxResults\": 20}",
+   "contentType": "application/json; charset=utf-8"
+  },
+  "input": {
+   "title": "SAM.gov Contract Opportunities",
+   "type": "object",
+   "schemaVersion": 1,
+   "properties": {
+    "keywords": {
+     "title": "Keywords",
+     "type": "array",
+     "description": "Words to search in SAM.gov notices, one search per line (results are merged and de-duplicated). Example: \"cybersecurity\", \"janitorial\", \"\\\"cloud migration\\\"\" (quotes for an exact phrase). Leave empty to return every notice that matches the other filters.",
+     "editor": "stringList",
+     "prefill": [
+      "software"
+     ],
+     "sectionCaption": "What to find",
+     "sectionDescription": "Combine keywords with codes. Every filter is optional; the prefilled run returns 20 recent software notices in under a minute."
+    },
+    "keywordScope": {
+     "title": "Match keywords in",
+     "type": "string",
+     "description": "\"Anywhere\" uses SAM.gov's own search box behaviour: it matches the title, description and attached documents, so a parts order with a standard cybersecurity clause can match \"cybersecurity\". \"Title only\" returns only notices whose title contains every word of the keyword (fewer, more precise results).",
+     "editor": "select",
+     "enum": [
+      "anywhere",
+      "title"
+     ],
+     "enumTitles": [
+      "Anywhere (title, text and attachments, like the SAM.gov search box)",
+      "Title only (more precise)"
+     ],
+     "default": "anywhere"
+    },
+    "naicsCodes": {
+     "title": "NAICS codes",
+     "type": "array",
+     "description": "Industry codes, 2 to 6 digits. A shorter code matches every code under it. Examples: 541512 (computer systems design), 541330 (engineering), 236220 (commercial building construction), 561720 (janitorial).",
+     "editor": "stringList"
+    },
+    "pscCodes": {
+     "title": "PSC codes (product/service codes)",
+     "type": "array",
+     "description": "Federal product and service codes, upper case. A prefix matches every code under it. Examples: DA01 (IT application development), R4 (professional support services), Z1 (maintenance of real property).",
+     "editor": "stringList"
+    },
+    "setAside": {
+     "title": "Set-aside types",
+     "type": "array",
+     "description": "Only notices reserved for these small-business programs. Leave empty for all, including unrestricted.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "SBA",
+       "SBP",
+       "8A",
+       "8AN",
+       "HZC",
+       "HZS",
+       "SDVOSBC",
+       "SDVOSBS",
+       "WOSB",
+       "WOSBSS",
+       "EDWOSB",
+       "EDWOSBSS",
+       "LAS",
+       "IEE",
+       "ISBEE",
+       "BICiv",
+       "VSA",
+       "VSS"
+      ],
+      "enumTitles": [
+       "Total Small Business (SBA)",
+       "Partial Small Business (SBP)",
+       "8(a) set-aside (8A)",
+       "8(a) sole source (8AN)",
+       "HUBZone set-aside (HZC)",
+       "HUBZone sole source (HZS)",
+       "Service-Disabled Veteran-Owned set-aside (SDVOSBC)",
+       "Service-Disabled Veteran-Owned sole source (SDVOSBS)",
+       "Women-Owned Small Business (WOSB)",
+       "WOSB sole source (WOSBSS)",
+       "Economically Disadvantaged WOSB (EDWOSB)",
+       "EDWOSB sole source (EDWOSBSS)",
+       "Local Area set-aside (LAS)",
+       "Indian Economic Enterprise (IEE)",
+       "Indian Small Business Economic Enterprise (ISBEE)",
+       "Buy Indian (BICiv)",
+       "Veteran-Owned Small Business set-aside, VA (VSA)",
+       "Veteran-Owned Small Business sole source, VA (VSS)"
+      ]
+     }
+    },
+    "noticeTypes": {
+     "title": "Notice types",
+     "type": "array",
+     "description": "Which kinds of notices to return. Leave empty for all types. For open bids pick Solicitation and Combined synopsis/solicitation; for early market research pick Sources sought and Presolicitation.",
+     "editor": "select",
+     "items": {
+      "type": "string",
+      "enum": [
+       "solicitation",
+       "combined_synopsis_solicitation",
+       "presolicitation",
+       "sources_sought",
+       "special_notice",
+       "award_notice",
+       "justification",
+       "intent_to_bundle",
+       "sale_of_surplus_property"
+      ],
+      "enumTitles": [
+       "Solicitation",
+       "Combined synopsis/solicitation",
+       "Presolicitation",
+       "Sources sought (RFI)",
+       "Special notice",
+       "Award notice",
+       "Justification (J&A)",
+       "Intent to bundle requirements",
+       "Sale of surplus property"
+      ]
+     }
+    },
+    "agency": {
+     "title": "Agency or office contains",
+     "type": "string",
+     "description": "Keep only notices whose department, sub-tier agency or office name or code contains this text (case-insensitive). Separate several with commas. Examples: \"veterans affairs\", \"army corps of engineers\", \"FA8726\".",
+     "editor": "textfield"
+    },
+    "placeOfPerformanceState": {
+     "title": "Place of performance state",
+     "type": "array",
+     "description": "Two-letter US state codes where the work is performed, for example VA, TX, MI.",
+     "editor": "stringList"
+    },
+    "postedWithinDays": {
+     "title": "Posted within the last N days",
+     "type": "integer",
+     "description": "Only notices posted in the last N days (US Eastern dates). Ignored when Posted from is set. Use 0 for no posted-date limit.",
+     "default": 7,
+     "prefill": 7,
+     "minimum": 0,
+     "maximum": 3650,
+     "sectionCaption": "Dates and status"
+    },
+    "postedFrom": {
+     "title": "Posted from",
+     "type": "string",
+     "description": "Earliest posted date, YYYY-MM-DD. Overrides Posted within the last N days.",
+     "editor": "datepicker"
+    },
+    "postedTo": {
+     "title": "Posted to",
+     "type": "string",
+     "description": "Latest posted date, YYYY-MM-DD. Defaults to today.",
+     "editor": "datepicker"
+    },
+    "responseDeadlineFrom": {
+     "title": "Response deadline from",
+     "type": "string",
+     "description": "Only notices whose response deadline is on or after this date, YYYY-MM-DD. Useful to skip bids that close too soon.",
+     "editor": "datepicker"
+    },
+    "responseDeadlineTo": {
+     "title": "Response deadline to",
+     "type": "string",
+     "description": "Only notices whose response deadline is on or before this date, YYYY-MM-DD.",
+     "editor": "datepicker"
+    },
+    "activeOnly": {
+     "title": "Active notices only",
+     "type": "boolean",
+     "description": "Return only notices that SAM.gov lists as active (not archived). Turn off to include archived notices.",
+     "default": true
+    },
+    "includeDescription": {
+     "title": "Include full description",
+     "type": "boolean",
+     "description": "Add the full notice text as plain text (HTML removed).",
+     "default": true,
+     "sectionCaption": "What to include"
+    },
+    "includeContacts": {
+     "title": "Include contracting contacts",
+     "type": "boolean",
+     "description": "Add the points of contact published on the notice (usually the contracting officer and specialist): name, title, email, phone.",
+     "default": true
+    },
+    "includeAttachments": {
+     "title": "Include attachment list",
+     "type": "boolean",
+     "description": "Add each attachment's file name, size and download URL (the files themselves are not downloaded). Costs one extra request per notice, so runs take longer.",
+     "default": false
+    },
+    "maxResults": {
+     "title": "Max opportunities",
+     "type": "integer",
+     "description": "Stop after this many opportunities are delivered (and charged). SAM.gov serves at most 10,000 records per search.",
+     "default": 50,
+     "prefill": 20,
+     "minimum": 1,
+     "maximum": 10000,
+     "sectionCaption": "Limits and monitoring"
+    },
+    "onlyNewSinceLastRun": {
+     "title": "Only new since last run (monitor mode)",
+     "type": "boolean",
+     "description": "Remember every notice delivered (in a named key-value store) and skip it on later runs. Skipped notices are never charged. Ideal for a daily schedule.",
+     "default": false
+    },
+    "stateStoreName": {
+     "title": "Monitor store name",
+     "type": "string",
+     "description": "Name of the key-value store that remembers delivered notices. Use one name per saved search, for example \"va-it-bids\".",
+     "default": "sam-gov-opportunities-seen",
+     "editor": "textfield"
+    },
+    "redeliverUpdated": {
+     "title": "Re-deliver amended notices",
+     "type": "boolean",
+     "description": "In monitor mode, deliver a notice again when SAM.gov shows a newer modified date (an amendment changes the record). Each re-delivery is charged as an opportunity.",
+     "default": false
+    },
+    "samApiKey": {
+     "title": "SAM.gov API key (optional)",
+     "type": "string",
+     "description": "Optional. Your own key for the official Get Opportunities Public API (api.sam.gov). Leave empty to use the keyless public source. Note: the official API matches keywords on titles only and has daily request limits per key.",
+     "editor": "textfield",
+     "isSecret": true,
+     "sectionCaption": "Data source (optional)"
+    }
+   }
+  }
  }
 ]
